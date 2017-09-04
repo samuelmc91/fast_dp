@@ -64,6 +64,8 @@ class FastDP:
         self._n_cores = 0
         self._max_n_jobs = 0
         self._n_cpus = get_number_cpus()
+        self._cluster_nodes=" "
+        self._plugin_library=" " 
 
         # image ranges
         self._first_image = None
@@ -95,6 +97,14 @@ class FastDP:
 
     def set_max_n_jobs(self, max_n_jobs):
         self._max_n_jobs = max_n_jobs
+        return
+
+    def set_cluster_nodes(self, cluster_nodes):
+        self._cluster_nodes = cluster_nodes
+        return
+
+    def set_plugin_library(self, plugin_library):
+        self._plugin_library = plugin_library
         return
 
     def set_first_image(self, first_image):
@@ -269,7 +279,8 @@ class FastDP:
         try:
             mosaics = integrate(self._metadata, self._p1_unit_cell,
                                 self._resolution_low, self._n_jobs,
-                                self._n_cores)
+                                self._n_cores,self._plugin_library,
+                                self._cluster_nodes)
             write('Mosaic spread: %.2f < %.2f < %.2f' % tuple(mosaics))
         except RuntimeError, e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
@@ -360,10 +371,21 @@ def main():
     parser.add_option('-J', '--maximum-number-of-jobs',
                       dest = 'maximum_number_of_jobs',
                       help = 'Maximum number of jobs for integration')
+    parser.add_option('-n', '--cluster-nodes',
+                      metavar = "CLUSTER_NODES",
+                      dest = 'cluster_nodes',
+                      help = 'Comma-separated list of node names or ip addresses')
+
+    parser.add_option('-l', '--lib',
+                      metavar = "PLUGIN_LIBRARY",
+                      dest = 'plugin_library',
+                      help = 'image reader plugin path, ending with .so')
 
     parser.add_option('-c', '--cell', dest = 'cell',
                       help = 'Cell constants for processing, needs spacegroup')
-    parser.add_option('-s', '--spacegroup', dest = 'spacegroup',
+    parser.add_option('-s', '--spacegroup',
+                      metavar = "SPACEGROUP",
+                      dest = 'spacegroup',
                       help = 'Spacegroup for scaling and merging')
 
     parser.add_option('-1', '--first-image', dest = 'first_image',
@@ -409,6 +431,16 @@ def main():
         if options.number_of_cores:
             n_cores = int(options.number_of_cores)
             fast_dp.set_n_cores(n_cores)
+
+        if options.cluster_nodes:
+            fast_dp.set_cluster_nodes(options.cluster_nodes)
+        else:
+            fast_dp.set_cluster_nodes(" ")
+
+        if options.plugin_library:
+            fast_dp.set_plugin_library(options.plugin_library)
+        else:
+            fast_dp.set_plugin_library(" ")
 
         if options.first_image:
             first_image = int(options.first_image)

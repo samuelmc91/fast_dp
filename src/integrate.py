@@ -4,7 +4,7 @@ import shutil
 from xds_writer import write_xds_inp_integrate
 from run_job import run_job
 
-def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
+def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors, plugin_library, cluster_nodes):
     '''Peform the integration with a triclinic basis.'''
 
     assert(metadata)
@@ -16,7 +16,8 @@ def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
     # maximum number of jobs, to give minimally 5 degree wedges.
 
     write_xds_inp_integrate(metadata, xds_inp, resolution_low,
-                            no_jobs=n_jobs, no_processors=n_processors)
+                            no_jobs=n_jobs, no_processors=n_processors,
+                            lib=plugin_library, nodes=cluster_nodes)
 
     shutil.copyfile(xds_inp, 'XDS.INP')
 
