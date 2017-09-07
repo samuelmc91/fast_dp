@@ -100,10 +100,11 @@ class FastDP:
         return
 
     def set_cluster_nodes(self, cluster_nodes):
-        self._cluster_nodes = cluster_nodes
+        self._cluster_nodes = cluster_nodes.replace(',',' ')
         return
 
     def set_plugin_library(self, plugin_library):
+        write('set_plugin_library %s' % plugin_library)
         self._plugin_library = plugin_library
         return
 
@@ -268,6 +269,18 @@ class FastDP:
         write('Wavelength: %.5f' % self._metadata['wavelength'])
         write('Working in: %s' % os.getcwd())
 
+        if self._plugin_library != " " :
+            self._metadata['extra_text'] = "LIB="+self._plugin_library
+ 
+        if self._cluster_nodes != " " :
+            if self._metadata['extra_text'] :
+                self._metadata['extra_text'] = self._metadata['extra_text']+\
+                  '\n'+"CLUSTER_NODES="+self._cluster_nodes
+            else:
+                self._metadata['extra_text'] = "CLUSTER_NODES="+self._cluster_nodes
+
+        write('Extra commands: %s' % self._metadata['extra_text'])
+
         try:
             self._p1_unit_cell = autoindex(self._metadata,
                                            input_cell = self._input_cell_p1)
@@ -279,8 +292,7 @@ class FastDP:
         try:
             mosaics = integrate(self._metadata, self._p1_unit_cell,
                                 self._resolution_low, self._n_jobs,
-                                self._n_cores,self._plugin_library,
-                                self._cluster_nodes)
+                                self._n_cores)
             write('Mosaic spread: %.2f < %.2f < %.2f' % tuple(mosaics))
         except RuntimeError, e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))

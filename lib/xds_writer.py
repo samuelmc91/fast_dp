@@ -200,7 +200,7 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
 
     return
 
-def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_processors=0, lib=" ", nodes=" "):
+def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_processors=0):
 
     # FIXME in here calculate the maximum number of jobs to correspond at the
     # least to 5 degree wedges / job.
@@ -218,14 +218,6 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
     template_fin = open(template, 'r')
 
     template_str = template_fin.read().strip()
-
-    if lib != " " :
-        metadata['extra_text'] = "LIB="+lib
-    if nodes != " " :
-        if metadata['extra_text']:
-            metadata['extra_text'] = metadata['extra_text']+'\n'+"CLUSTER_NODES"+nodes.replace(',',' ')
-        else:
-            metadata['extra_text'] = "CLUSTER_NODES"+nodes.replace(',',' ')
 
     # should somehow hang this from an anomalous flag
 
