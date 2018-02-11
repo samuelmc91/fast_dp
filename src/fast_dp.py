@@ -115,10 +115,6 @@ class FastDP:
     def get_execution_hosts(self):
         return self._execution_hosts
 
-    def set_cluster_nodes(self, cluster_nodes):
-        self._cluster_nodes = cluster_nodes.replace(',',' ')
-        return
-
     def set_plugin_library(self, plugin_library):
         write('set_plugin_library %s' % plugin_library)
         self._plugin_library = plugin_library
@@ -281,13 +277,6 @@ class FastDP:
         if self._plugin_library != " " :
             self._metadata['extra_text'] = "LIB="+self._plugin_library
  
-        if self._cluster_nodes != " " :
-            if self._metadata['extra_text'] :
-                self._metadata['extra_text'] = self._metadata['extra_text']+\
-                  '\n'+"CLUSTER_NODES="+self._cluster_nodes
-            else:
-                self._metadata['extra_text'] = "CLUSTER_NODES="+self._cluster_nodes
-
         write('Extra commands: %s' % self._metadata['extra_text'])
 
         try:
@@ -398,7 +387,7 @@ def main():
                       help = 'image reader plugin path, ending with .so')
 
     parser.add_option('-e', '--execution-hosts',
-                      '-n', '--cluster-nodes'
+                      '-n', '--cluster-nodes',
                       metavar = "CLUSTER_NODES",
                       dest = 'execution_hosts',
                       help = 'names or ip addresses for execution hosts for forkxds')
@@ -460,11 +449,6 @@ def main():
         if options.number_of_cores:
             n_cores = int(options.number_of_cores)
             fast_dp.set_n_cores(n_cores)
-
-        if options.cluster_nodes:
-            fast_dp.set_cluster_nodes(options.cluster_nodes)
-        else:
-            fast_dp.set_cluster_nodes(" ")
 
         if options.plugin_library:
             fast_dp.set_plugin_library(options.plugin_library)
