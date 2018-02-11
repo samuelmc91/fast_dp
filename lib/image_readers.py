@@ -188,6 +188,20 @@ def failover_cbf(cbf_file):
             header['serial_number'] = get_dectris_serial_no(record)
             continue
 
+        if 'PILATUS 12M' in record:
+            header['detector_class'] = 'pilatus 12M'
+            header['detector'] = 'dectris'
+            header['size'] = (5071, 2463)
+            header['serial_number'] = get_dectris_serial_no(record)
+            continue
+
+        if 'Detector: ADSC HF-4M' in record:
+            header['detector_class'] = 'adsc 4M'
+            header['detector'] = 'adsc-pad'
+            header['size'] = (2290, 2100)
+            header['serial_number'] = record.replace(',', '').split()[-1]
+            continue
+        
         if 'Start_angle' in record:
             header['phi_start'] = float(record.split()[-2])
             continue
@@ -308,11 +322,14 @@ def read_image_metadata(image):
             metadata = failover_cbf(image)
 
             assert(metadata['detector_class'] in \
-                   ['pilatus 2M', 'pilatus 6M', 'eiger 1M'
-                    'eiger 4M', 'eiger 9M', 'eiger 16M'])
+                   ['pilatus 2M', 'pilatus 6M', 'pilatus 12M',
+                    'eiger 1M', 'eiger 4M', 'eiger 9M', 'eiger 16M',
+                    'adsc 4M'])
 
             if metadata['detector_class'] == 'pilatus 2M':
                 metadata['detector'] = 'PILATUS_2M'
+            elif metadata['detector_class'] == 'pilatus 12M':
+                metadata['detector'] = 'PILATUS_12M'
             elif metadata['detector_class'] == 'eiger 1M':
                 metadata['detector'] = 'EIGER_1M'
             elif metadata['detector_class'] == 'eiger 4M':
@@ -321,6 +338,8 @@ def read_image_metadata(image):
                 metadata['detector'] = 'EIGER_9M'
             elif metadata['detector_class'] == 'eiger 16M':
                 metadata['detector'] = 'EIGER_16M'
+            elif metadata['detector_class'] == 'adsc 4M':
+                metadata['detector'] = 'ADSC_4M'
             else:
                 metadata['detector'] = 'PILATUS_6M'
 

@@ -8,9 +8,9 @@
 
 import sys
 import os
+import json
 import time
 import copy
-import exceptions
 import traceback
 
 if not 'FAST_DP_ROOT' in os.environ:
@@ -24,7 +24,7 @@ if not fast_dp_lib in sys.path:
 from run_job import get_number_cpus
 from cell_spacegroup import check_spacegroup_name, check_split_cell, \
      generate_primitive_cell
-from xml_output import write_ispyb_xml
+import output
 
 from image_readers import read_image_metadata, check_file_readable
 
@@ -59,13 +59,14 @@ class FastDP:
         self._resolution_low = 30.0
         self._resolution_high = 0.0
 
-        # job control see -j -J -k command-line options below
+        # job control see -j -J -k command-line options below for node names
+        # see fast_dp#9
         self._n_jobs = 1
         self._n_cores = 0
         self._max_n_jobs = 0
         self._n_cpus = get_number_cpus()
-        self._cluster_nodes=" "
         self._plugin_library=" " 
+        self._execution_hosts = []
 
         # image ranges
         self._first_image = None
@@ -85,19 +86,34 @@ class FastDP:
         self._xml_results = None
         self._refined_beam = (0, 0)
 
-        return
-
     def set_n_jobs(self, n_jobs):
         self._n_jobs = n_jobs
-        return
 
     def set_n_cores(self, n_cores):
         self._n_cores = n_cores
-        return
 
     def set_max_n_jobs(self, max_n_jobs):
         self._max_n_jobs = max_n_jobs
-        return
+
+    def set_execution_hosts(self, execution_hosts):
+        self._execution_hosts = execution_hosts
+        max_n_jobs = 0
+        for host in execution_hosts:
+            if ':' in host:
+                max_n_jobs += int(host.split(':')[1])
+        if max_n_jobs:
+            self._max_n_jobs = max_n_jobs
+        else:
+            self._max_n_jobs = len(execution_hosts)
+        self._n_jobs = 0
+
+        # add this to the metadata as "extra text"
+        et = self._metadata.get('extra_text', '')
+        self._metadata['extra_text'] = et + 'CLUSTER_NODES=%s\n' % \
+            ' '.join(execution_hosts)
+
+    def get_execution_hosts(self):
+        return self._execution_hosts
 
     def set_cluster_nodes(self, cluster_nodes):
         self._cluster_nodes = cluster_nodes.replace(',',' ')
@@ -110,19 +126,15 @@ class FastDP:
 
     def set_first_image(self, first_image):
         self._first_image = first_image
-        return
 
     def set_last_image(self, last_image):
         self._last_image = last_image
-        return
 
     def set_resolution_low(self, resolution_low):
         self._resolution_low = resolution_low
-        return
 
     def set_resolution_high(self, resolution_high):
         self._resolution_high = resolution_high
-        return
 
     def set_start_image(self, start_image):
         '''Set the image to work from: in the majority of cases this will
@@ -132,7 +144,6 @@ class FastDP:
         assert(self._start_image is None)
 
         # check input is image file
-        import os
         if not os.path.isfile(start_image):
             raise RuntimeError, 'no image provided: data collection cancelled?'
 
@@ -161,7 +172,12 @@ class FastDP:
 
         self._metadata['beam'] = beam
 
-        return
+    def set_distance(self, distance):
+        '''Set the detector distance, in mm.'''
+
+        assert(self._metadata)
+
+        self._metadata['distance'] = distance
 
     def set_atom(self, atom):
         '''Set the heavy atom, if appropriate.'''
@@ -170,14 +186,11 @@ class FastDP:
 
         self._metadata['atom'] = atom
 
-        return
-
     # N.B. these two methods assume that the input unit cell etc.
     # has already been tested at the option parsing stage...
 
     def set_input_spacegroup(self, input_spacegroup):
         self._input_spacegroup = input_spacegroup
-        return
 
     def set_input_cell(self, input_cell):
 
@@ -191,15 +204,11 @@ class FastDP:
         self._input_cell_p1 = generate_primitive_cell(
             self._input_cell, self._input_spacegroup).parameters()
 
-        return
-
     def _read_image_metadata(self):
         '''Get the information from the start image to the metadata bucket.
         For internal use only.'''
 
         assert(self._start_image)
-
-        return
 
     def get_metadata_item(self, item):
         '''Get a specific item from the metadata.'''
@@ -218,7 +227,7 @@ class FastDP:
             hostname = os.environ['HOSTNAME'].split('.')[0]
             write('Running on: %s' % hostname)
 
-        except:
+        except Exception:
             pass
 
         # check input frame limits
@@ -284,7 +293,7 @@ class FastDP:
         try:
             self._p1_unit_cell = autoindex(self._metadata,
                                            input_cell = self._input_cell_p1)
-        except exceptions.Exception, e:
+        except Exception as e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
             write('Autoindexing error: %s' % e)
             return
@@ -294,7 +303,7 @@ class FastDP:
                                 self._resolution_low, self._n_jobs,
                                 self._n_cores)
             write('Mosaic spread: %.2f < %.2f < %.2f' % tuple(mosaics))
-        except RuntimeError, e:
+        except RuntimeError as e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
             write('Integration error: %s' % e)
             return
@@ -328,14 +337,14 @@ class FastDP:
             self._refined_beam = (self._metadata['pixel'][1] * beam_pixels[1],
                                   self._metadata['pixel'][0] * beam_pixels[0])
 
-        except RuntimeError, e:
+        except RuntimeError as e:
             write('Scaling error: %s' % e)
             return
 
         try:
             n_images = self._metadata['end'] - self._metadata['start'] + 1
             self._xml_results = merge()
-        except RuntimeError, e:
+        except RuntimeError as e:
             write('Merging error: %s' % e)
             return
 
@@ -350,18 +359,15 @@ class FastDP:
                self._nref))
         write('RPS: %.1f' % (float(self._nref) / duration))
 
-        # write out the xml
-
-        write_ispyb_xml(self._commandline, self._space_group,
-                        self._unit_cell, self._xml_results,
-                        self._start_image, self._refined_beam)
-
-        return
+        # write out json and xml
+        for func in (output.write_json, output.write_ispyb_xml):
+          func(self._commandline, self._space_group,
+               self._unit_cell, self._xml_results,
+               self._start_image, self._refined_beam)
 
 def main():
     '''Main routine for fast_dp.'''
 
-    import os
     os.environ['FAST_DP_FORKINTEGRATE'] = '1'
 
     from optparse import OptionParser
@@ -373,6 +379,9 @@ def main():
     parser.add_option('-b', '--beam', dest = 'beam',
                       help = 'Beam centre: x, y (mm)')
 
+    parser.add_option('-d', '--distance', dest = 'distance',
+                      help = 'Detector distance: d (mm)')
+
     parser.add_option('-a', '--atom', dest = 'atom',
                       help = 'Atom type (e.g. Se)')
 
@@ -383,15 +392,16 @@ def main():
     parser.add_option('-J', '--maximum-number-of-jobs',
                       dest = 'maximum_number_of_jobs',
                       help = 'Maximum number of jobs for integration')
-    parser.add_option('-n', '--cluster-nodes',
-                      metavar = "CLUSTER_NODES",
-                      dest = 'cluster_nodes',
-                      help = 'Comma-separated list of node names or ip addresses')
-
     parser.add_option('-l', '--lib',
                       metavar = "PLUGIN_LIBRARY",
                       dest = 'plugin_library',
                       help = 'image reader plugin path, ending with .so')
+
+    parser.add_option('-e', '--execution-hosts',
+                      '-n', '--cluster-nodes'
+                      metavar = "CLUSTER_NODES",
+                      dest = 'execution_hosts',
+                      help = 'names or ip addresses for execution hosts for forkxds')
 
     parser.add_option('-c', '--cell', dest = 'cell',
                       help = 'Cell constants for processing, needs spacegroup')
@@ -426,11 +436,18 @@ def main():
             x, y = tuple(map(float, options.beam.split(',')))
             fast_dp.set_beam((x, y))
 
+        if options.distance:
+            fast_dp.set_distance(float(options.distance))
+
         if options.atom:
             fast_dp.set_atom(options.atom)
 
         if options.maximum_number_of_jobs:
             fast_dp.set_max_n_jobs(int(options.maximum_number_of_jobs))
+
+        if options.execution_hosts:
+            fast_dp.set_execution_hosts(options.execution_hosts.split(','))
+            write('Execution hosts: %s' % ' '.join(fast_dp.get_execution_hosts()))
 
         if options.number_of_jobs:
             if options.maximum_number_of_jobs:
@@ -494,7 +511,7 @@ def main():
 
         fast_dp.process()
 
-    except exceptions.Exception, e:
+    except Exception as e:
         traceback.print_exc(file = open('fast_dp.error', 'w'))
         write('Fast DP error: %s' % str(e))
 
@@ -506,11 +523,8 @@ def main():
         if prop in ignore:
             continue
         json_stuff[prop] = getattr(fast_dp, prop)
-    import json
-    json.dump(json_stuff, open('fast_dp.json', 'wb'))
-
-    return
+    with open('fast_dp.state', 'wb') as fh:
+      json.dump(json_stuff, fh)
 
 if __name__ == '__main__':
-
     main()

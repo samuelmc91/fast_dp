@@ -55,7 +55,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
                                        metadata['end']))
 
-    # compute the background range as min(all, 5)
+    # compute the background range as min(all, 5) #TODO maybe 5 degrees?
 
     if metadata['end'] - metadata['start'] > 5:
         fout.write('BACKGROUND_RANGE=%d %d\n' % \
@@ -63,6 +63,9 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     else:
         fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
                                                  metadata['end']))
+
+    # REFINE(IDXREF)=
+    fout.write('REFINE(IDXREF)=CELL AXIS ORIENTATION POSITION BEAM\n')
 
     # by default autoindex off all images - can make this better later on.
     # Ok: I think it is too slow already. Three wedges, as per xia2...
@@ -97,7 +100,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
         mid = (len(images) / 2) - wedge_size + images[0] - 1
         wedge = (mid, mid + wedge_size)
         fout.write('SPOT_RANGE=%d %d\n' % wedge)
-        wedge = (images[-5], images[-1])
+        wedge = (images[-wedge_size], images[-1])
         fout.write('SPOT_RANGE=%d %d\n' % wedge)
 
     fout.close()
@@ -236,8 +239,8 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
         qy = metadata['pixel'][1],
-        orgx = metadata['beam'][1] / metadata['pixel'][1],
-        orgy = metadata['beam'][0] / metadata['pixel'][0],
+        orgx = metadata['beam'][0] / metadata['pixel'][0],
+        orgy = metadata['beam'][1] / metadata['pixel'][1],
         distance = metadata['distance'],
         sensor = metadata.get('sensor', None),
         wavelength = metadata['wavelength'],
@@ -306,8 +309,8 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
         qy = metadata['pixel'][1],
-        orgx = metadata['beam'][1] / metadata['pixel'][1],
-        orgy = metadata['beam'][0] / metadata['pixel'][0],
+        orgx = metadata['beam'][0] / metadata['pixel'][0],
+        orgy = metadata['beam'][1] / metadata['pixel'][1],
         distance = metadata['distance'],
         sensor = metadata.get('sensor', None),
         wavelength = metadata['wavelength'],
@@ -373,8 +376,8 @@ def write_xds_inp_correct_no_cell(metadata,
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
         qy = metadata['pixel'][1],
-        orgx = metadata['beam'][1] / metadata['pixel'][1],
-        orgy = metadata['beam'][0] / metadata['pixel'][0],
+        orgx = metadata['beam'][0] / metadata['pixel'][0],
+        orgy = metadata['beam'][1] / metadata['pixel'][1],
         distance = metadata['distance'],
         sensor = metadata['sensor'],
         wavelength = metadata['wavelength'],
