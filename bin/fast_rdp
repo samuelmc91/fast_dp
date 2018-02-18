@@ -10,7 +10,7 @@ export FAST_DP_ROOT=`dirname "$full_path" | sed 's/\/bin$//'`
 
 if [  -x "/etc/fast_dp/fast_rdp.ini" ]
 then
-    source/etc/fast_dp/fast_rdp.ini
+    source /etc/fast_dp/fast_rdp.ini
 fi
 
 if [  -x "$HOME/.fast_dp/fast_rdp.ini" ]

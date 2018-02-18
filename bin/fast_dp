@@ -11,7 +11,7 @@ export PHENIX_TRUST_OTHER_ENV=1
 
 if [  -x "/etc/fast_dp/fast_dp.ini" ]
 then
-    source/etc/fast_dp/fast_dp.ini
+    source /etc/fast_dp/fast_dp.ini
 fi
 
 if [  -x "$HOME/.fast_dp/fast_dp.ini" ]
