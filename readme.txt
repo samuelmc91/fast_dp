@@ -28,13 +28,17 @@ Usage: fast_dp.py [options]
 Options:
   -h, --help            show this help message and exit
   -b BEAM, --beam=BEAM  Beam centre: x, y (mm)
+  -d DISTANCE, --distance=DISTANCE
+                        Detector distance: d (mm)
   -a ATOM, --atom=ATOM  Atom type (e.g. Se)
   -j NUMBER_OF_JOBS, --number-of-jobs=NUMBER_OF_JOBS
                         Number of jobs for integration
-  -k NUMBER_OF_CORES, --number-of-cores=NUMBER_OF_CORES
-                        Number of cores for integration
+  -l PLUGIN_LIBRARY, --lib=PLUGIN_LIBRARY
+                        image reader plugin path, ending with .so
   -J MAXIMUM_NUMBER_OF_JOBS, --maximum-number-of-jobs=MAXIMUM_NUMBER_OF_JOBS
                         Maximum number of jobs for integration
+  -k NUMBER_OF_CORES, --number-of-cores=NUMBER_OF_CORES
+                        Number of cores (theads) for integration
   -c CELL, --cell=CELL  Cell constants for processing, needs spacegroup
   -s SPACEGROUP, --spacegroup=SPACEGROUP
                         Spacegroup for scaling and merging
@@ -134,6 +138,10 @@ jobs to your queuing system.
 Provided that the dependencies are all satisfied and the programs are on the
 PATH, all that is necessary is to unpack the fast_dp tarball and place the
 bin directory found therein into your PATH.
+
+Optionally, you may manage paths or other initialization, by creating 
+/etc/fast_dp/fast_dp.ini or $HOME/.fast_dp/fast_dp.ini, for example to set
+paths to find xds.
 
 3. Assumptions
 

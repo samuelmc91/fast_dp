@@ -9,7 +9,15 @@ full_path="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 export FAST_DP_ROOT=`dirname "$full_path" | sed 's/\/bin$//'`
 export PHENIX_TRUST_OTHER_ENV=1
 
-source /etc/profile.d/lsbr_profile.sh
+if [  -x "/etc/fast_dp/fast_dp.ini" ]
+then
+    source/etc/fast_dp/fast_dp.ini
+fi
+
+if [  -x "$HOME/.fast_dp/fast_dp.ini" ]
+then
+    source $HOME/.fast_dp/fast_dp.ini
+fi
 
 # extend to (hopefully) 4096 file handles... for big Eiger sets
 ulimit -n `ulimit -Hn 2>&1 |sed 's/unlimited/4096/'`
