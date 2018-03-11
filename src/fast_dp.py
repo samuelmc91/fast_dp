@@ -12,6 +12,7 @@ import json
 import time
 import copy
 import traceback
+import shutil
 
 if not 'FAST_DP_ROOT' in os.environ:
     raise RuntimeError, 'FAST_DP_ROOT not defined'
@@ -33,7 +34,7 @@ from integrate import integrate
 from scale import scale
 from merge import merge
 from pointgroup import decide_pointgroup
-from logger import write
+from logger import write, set_afilename, set_afilepath, get_afilepath, set_afileprefix, get_afileprefix
 
 class FastDP:
     '''A class to implement fast data processing for MX beamlines (at Diamond)
@@ -274,6 +275,7 @@ class FastDP:
         write('Wavelength: %.5f' % self._metadata['wavelength'])
         write('Working in: %s' % os.getcwd())
 
+
         if self._plugin_library != " " :
             self._metadata['extra_text'] = "LIB="+self._plugin_library
  
@@ -285,6 +287,14 @@ class FastDP:
         except Exception as e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
             write('Autoindexing error: %s' % e)
+            fdpelogpath = get_afilepath()
+            fdpelogprefix = get_afileprefix()
+            if fdpelogpath:
+                try:
+                    shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
+                    write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+                except:
+                    write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
             return
 
         try:
@@ -295,6 +305,14 @@ class FastDP:
         except RuntimeError as e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
             write('Integration error: %s' % e)
+            fdpelogpath = get_afilepath()
+            fdpelogprefix = get_afileprefix()
+            if fdpelogpath:
+                try:
+                    shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
+                    write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+                except:
+                    write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
             return
 
         try:
@@ -333,6 +351,14 @@ class FastDP:
         try:
             n_images = self._metadata['end'] - self._metadata['start'] + 1
             self._xml_results = merge()
+            mtzlogpath = get_afilepath()
+            mtzlogprefix = get_afileprefix()
+            if mtzlogpath:
+               try:
+                   shutil.copyfile('fast_dp.mtz',os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz'))
+                   write('Archived fast_dp.mtz to %s' % os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')) 
+               except:
+                   write('fast_dp.mtz not archived to %s' % os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')) 
         except RuntimeError as e:
             write('Merging error: %s' % e)
             return
@@ -408,6 +434,10 @@ def main():
                       help = 'High resolution limit')
     parser.add_option('-R', '--resolution-low', dest = 'resolution_low',
                       help = 'Low resolution limit')
+    parser.add_option('-o', '--component-offsets',
+                      metavar = "COMPONENT",
+                      dest = 'component_offsets',
+                      help = 'Component offsets into working directory path: log_offset, prefix_start, prefix_end')
 
     (options, args) = parser.parse_args()
 
@@ -415,6 +445,49 @@ def main():
 
     image = args[0]
 
+    #set up logging, at designated component if found, or in CWD otherwise
+    # The default is to just write fast_dp.log in CWD
+    # Component -1 is CWD itself.  The next level up is -2, etc.
+    # if name_start is -1, the log name is fast_dp.log.  If log_offset is
+    # also -1 or is 0, no additional log is written, otherwise the '_' separated
+    # concatenation of the components prefixed to '_fast_dp.log' is the
+    # name of the log file
+
+    log_archive_path = os.getcwd()
+    log_archive_prefix = ''
+    if not options.component_offsets:
+        options.component_offsets = os.getenv('FAST_DP_LOG_COMPONENT_OFFSETS','0,0,0')
+    log_offset,prefix_start,prefix_end = options.component_offsets.split(',')
+    log_offset = int(log_offset)
+    prefix_start = int(prefix_start)
+    prefix_end = int(prefix_end)
+    cur_offset = -1
+    head = log_archive_path
+    components={}
+    paths={}
+    while head:
+        paths[cur_offset] = head
+        (head,tail) = os.path.split(head)
+        components[cur_offset] = tail
+        cur_offset = cur_offset -1
+        if head=='/':
+            break
+    if log_offset <= -1 and log_offset > cur_offset:
+        try:
+            log_archive_path = paths[log_offset]
+        except:
+            log_archive_path = os.getcwd()
+    if prefix_start <= prefix_end and prefix_end <= 0 and prefix_start > cur_offset:
+        cur_offset = prefix_start
+        while cur_offset <= prefix_end:
+            log_archive_prefix = log_archive_prefix+components[cur_offset]+'_'
+            cur_offset = cur_offset+1
+    write('log_archive_path: %s'% log_archive_path)
+    write('log_archive_prefix: %s'% log_archive_prefix)
+    if (log_offset < -1):
+        set_afilepath(log_archive_path)
+        set_afileprefix(log_archive_prefix)
+        set_afilename(os.path.join(log_archive_path,log_archive_prefix+"fast_dp.log"))
     try:
         fast_dp = FastDP()
         fast_dp._commandline = commandline
@@ -498,6 +571,15 @@ def main():
     except Exception as e:
         traceback.print_exc(file = open('fast_dp.error', 'w'))
         write('Fast DP error: %s' % str(e))
+        fdpelogpath = get_afilepath()
+        fdpelogprefix = get_afileprefix()
+        if fdpelogpath:
+           try:
+               shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
+               write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+           except:
+               write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+
 
     json_stuff = { }
     for prop in dir(fast_dp):
