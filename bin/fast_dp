@@ -24,7 +24,7 @@ fi
 if [  -x "$HOME/.fast_dp/fast_dp.ini" ]
 then
     source $HOME/.fast_dp/fast_dp.ini
-    echo "fast_dp initialized from $HOME/.fasst_dp/fast_dp.ini"
+    echo "fast_dp initialized from $HOME/.fast_dp/fast_dp.ini"
 fi
 
 # extend to (hopefully) 4096 file handles... for big Eiger sets
