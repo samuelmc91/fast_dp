@@ -12,11 +12,19 @@ export PHENIX_TRUST_OTHER_ENV=1
 if [  -x "/etc/fast_dp/fast_dp.ini" ]
 then
     source /etc/fast_dp/fast_dp.ini
+    echo "fast_dp initialized from /etc/fast_dp/fast_dp.ini"
+fi
+
+if [  -x "$FAST_DP_ROOT/fast_dp.ini" ]
+then
+    source $FAST_DP_ROOT/fast_dp.ini
+    echo "fast_dp initialized from $FAST_DP_ROOT/fast_dp.ini"
 fi
 
 if [  -x "$HOME/.fast_dp/fast_dp.ini" ]
 then
     source $HOME/.fast_dp/fast_dp.ini
+    echo "fast_dp initialized from $HOME/.fasst_dp/fast_dp.ini"
 fi
 
 # extend to (hopefully) 4096 file handles... for big Eiger sets
