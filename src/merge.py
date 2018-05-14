@@ -36,10 +36,10 @@ def merge(hklout='fast_dp.mtz', aimless_log='aimless.log'):
     statistics - this will use pointless for the reflection file format
     mashing.'''
 
-    run_job('pointless',
+    run_job('pointless_wrapper',
             ['-c', 'xdsin', 'XDS_ASCII.HKL', 'hklout', 'xds_sorted.mtz'])
 
-    log = run_job('aimless',
+    log = run_job('aimless_wrapper',
                   ['hklin', 'xds_sorted.mtz', 'hklout', hklout,
                    'xmlout', 'aimless.xml'],
                   ['bins 20', 'run 1 all', 'scales constant',

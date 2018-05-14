@@ -71,7 +71,8 @@ class FastDP:
         self._n_cores = 0
         self._max_n_jobs = 0
         self._n_cpus = get_number_cpus()
-        self._plugin_library=" " 
+        self._plugin_library=" "
+        self._h5toxds=" "
         self._execution_hosts = []
 
         # image ranges
@@ -121,10 +122,21 @@ class FastDP:
     def get_execution_hosts(self):
         return self._execution_hosts
 
+    def set_pa_host(self, pa_host):
+        self._pa_host = pa_host
+        os.environ["FAST_DP_PA_HOST"]=pa_host
+
+    def get_pa_host(self):
+        return self._pa_host
+
     def set_plugin_library(self, plugin_library):
         write('set_plugin_library %s' % plugin_library)
         self._plugin_library = plugin_library
-        return
+
+    def set_h5toxds(self, h5toxds):
+        write('set_h5toxds %s' % h5toxds)
+        self._h5toxds = h5toxds
+        os.environ['H5TOXDS_PATH'] = h5toxds
 
     def set_first_image(self, first_image):
         self._first_image = first_image
@@ -281,8 +293,10 @@ class FastDP:
         write('Working in: %s' % os.getcwd())
 
 
-        if self._plugin_library != " " :
+        if self._plugin_library != " " and self._plugin_library != "None":
             self._metadata['extra_text'] = "LIB="+self._plugin_library
+        elif self._plugin_library == "None":
+            self._metadata['extra_text'] = None
  
         write('Extra commands: %s' % self._metadata['extra_text'])
 
@@ -415,13 +429,23 @@ def main():
     parser.add_option('-l', '--lib',
                       metavar = "PLUGIN_LIBRARY",
                       dest = 'plugin_library',
-                      help = 'image reader plugin path, ending with .so')
+                      help = 'image reader plugin path, ending with .so or "None"')
+    parser.add_option('-5', '--h5toxds',
+                      metavar = "H5TOXDS",
+                      dest = 'h5toxds',
+                      help = 'program name or path for H5ToXds binary')
 
     parser.add_option('-e', '--execution-hosts',
                       '-n', '--cluster-nodes',
                       metavar = "CLUSTER_NODES",
                       dest = 'execution_hosts',
                       help = 'names or ip addresses for execution hosts for forkxds')
+
+    parser.add_option('-p', '--pointless-aimless-host',
+                      metavar = "POINTLESS_AIMLESS_HOST",
+                      dest = 'pa_host',
+                      help = 'name or ip address for execution host for pointless and aimless')
+
 
     parser.add_option('-c', '--cell', dest = 'cell',
                       help = 'Cell constants for processing, needs spacegroup')
@@ -529,6 +553,9 @@ def main():
         if options.execution_hosts:
             fast_dp.set_execution_hosts(options.execution_hosts.split(','))
             write('Execution hosts: %s' % ' '.join(fast_dp.get_execution_hosts()))
+        if options.pa_host:
+            fast_dp.set_pa_host(options.pa_host)
+            write('pointless/aimless host: %s' % fast_dp.get_pa_host())
 
         if options.number_of_jobs:
             if options.maximum_number_of_jobs:
@@ -546,6 +573,11 @@ def main():
             fast_dp.set_plugin_library(options.plugin_library)
         else:
             fast_dp.set_plugin_library(" ")
+
+        if options.h5toxds:
+            fast_dp.set_h5toxds(options.h5toxds)
+        else:
+            fast_dp.set_h5toxds(" ")
 
         if options.first_image:
             first_image = int(options.first_image)
