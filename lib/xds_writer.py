@@ -32,7 +32,6 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     friedels_law = 'FALSE'
 
     fout.write('%s\n' % template_str.format(
-        extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         nx = metadata['size'][0],
         ny = metadata['size'][1],
@@ -42,6 +41,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
         orgy = metadata['beam'][1] / metadata['pixel'][1],
         distance = metadata['distance'],
         sensor = metadata.get('sensor', None),
+        saturation = metadata.get('saturation', 65000),
         wavelength = metadata['wavelength'],
         oscillation = metadata['oscillation'][1],
         friedels_law = friedels_law,
@@ -55,7 +55,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
                                        metadata['end']))
 
-    # compute the background range as min(all, 5) #TODO maybe 5 degrees?
+    # compute the background range as min(all, 5)
 
     if metadata['end'] - metadata['start'] > 5:
         fout.write('BACKGROUND_RANGE=%d %d\n' % \
@@ -63,9 +63,6 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     else:
         fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
                                                  metadata['end']))
-
-    # REFINE(IDXREF)=
-    fout.write('REFINE(IDXREF)=CELL AXIS ORIENTATION POSITION BEAM\n')
 
     # by default autoindex off all images - can make this better later on.
     # Ok: I think it is too slow already. Three wedges, as per xia2...
@@ -100,7 +97,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
         mid = (len(images) / 2) - wedge_size + images[0] - 1
         wedge = (mid, mid + wedge_size)
         fout.write('SPOT_RANGE=%d %d\n' % wedge)
-        wedge = (images[-wedge_size], images[-1])
+        wedge = (images[-5], images[-1])
         fout.write('SPOT_RANGE=%d %d\n' % wedge)
 
     fout.close()
@@ -126,7 +123,6 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
     friedels_law = 'FALSE'
 
     fout.write('%s\n' % template_str.format(
-        extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         nx = metadata['size'][0],
         ny = metadata['size'][1],
@@ -136,6 +132,7 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
         orgy = metadata['beam'][1] / metadata['pixel'][1],
         distance = metadata['distance'],
         sensor = metadata.get('sensor', None),
+        saturation = metadata.get('saturation', 65000),
         wavelength = metadata['wavelength'],
         oscillation = metadata['oscillation'][1],
         friedels_law = friedels_law,
@@ -218,9 +215,7 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
         raise RuntimeError, 'template for %s not found at %s' % \
               (metadata['detector'], template)
 
-    template_fin = open(template, 'r')
-
-    template_str = template_fin.read().strip()
+    template_str = open(template, 'r').read().strip()
 
     # should somehow hang this from an anomalous flag
 
@@ -230,7 +225,6 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
         no_processors = get_number_cpus()
 
     fout.write('%s\n' % template_str.format(
-        extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = no_processors,
         no_jobs = no_jobs,
         resolution_low = resolution_low,
@@ -239,10 +233,11 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
         qy = metadata['pixel'][1],
-        orgx = metadata['beam'][0] / metadata['pixel'][0],
-        orgy = metadata['beam'][1] / metadata['pixel'][1],
+        orgx = metadata['beam'][1] / metadata['pixel'][1],
+        orgy = metadata['beam'][0] / metadata['pixel'][0],
         distance = metadata['distance'],
         sensor = metadata.get('sensor', None),
+        saturation = metadata.get('saturation', 65000),
         wavelength = metadata['wavelength'],
         oscillation = metadata['oscillation'][1],
         friedels_law = friedels_law,
@@ -266,8 +261,7 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
 
 def write_xds_inp_correct(metadata, unit_cell, space_group_number,
                           xds_inp, scale = True,
-                          resolution_low = 30, resolution_high = 0.0,
-                          turn_subset = False):
+                          resolution_low = 30, resolution_high = 0.0):
 
     fout = open(xds_inp, 'w')
 
@@ -294,7 +288,6 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
         corrections = '!'
 
     fout.write('%s\n' % template_str.format(
-        extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         resolution_low = resolution_low,
         resolution_high = resolution_high,
@@ -309,10 +302,11 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
         qy = metadata['pixel'][1],
-        orgx = metadata['beam'][0] / metadata['pixel'][0],
-        orgy = metadata['beam'][1] / metadata['pixel'][1],
+        orgx = metadata['beam'][1] / metadata['pixel'][1],
+        orgy = metadata['beam'][0] / metadata['pixel'][0],
         distance = metadata['distance'],
         sensor = metadata.get('sensor', None),
+        saturation = metadata.get('saturation', 65000),
         wavelength = metadata['wavelength'],
         oscillation = metadata['oscillation'][1],
         friedels_law = friedels_law,
@@ -324,15 +318,8 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
 
     # then we get the non-template stuff
 
-    if turn_subset:
-        # limit to 360 degrees...
-        width = metadata['oscillation'][1]
-        start, end = metadata['start'], metadata['end']
-        if (end - start + 1) * width > 360:
-            end = start + (360. / width) - 1
-        fout.write('DATA_RANGE=%d %d\n' % (start, end))
-    else:
-        fout.write('DATA_RANGE=%d %d\n' % (metadata['start'], metadata['end']))
+    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
+                                       metadata['end']))
 
     fout.close()
 
@@ -368,7 +355,6 @@ def write_xds_inp_correct_no_cell(metadata,
         corrections = '!'
 
     fout.write('%s\n' % template_str.format(
-        extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         resolution_low = resolution_low,
         resolution_high = resolution_high,
@@ -376,10 +362,11 @@ def write_xds_inp_correct_no_cell(metadata,
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
         qy = metadata['pixel'][1],
-        orgx = metadata['beam'][0] / metadata['pixel'][0],
-        orgy = metadata['beam'][1] / metadata['pixel'][1],
+        orgx = metadata['beam'][1] / metadata['pixel'][1],
+        orgy = metadata['beam'][0] / metadata['pixel'][0],
         distance = metadata['distance'],
         sensor = metadata['sensor'],
+        saturation = metadata.get('saturation', 65000),
         wavelength = metadata['wavelength'],
         oscillation = metadata['oscillation'][1],
         friedels_law = friedels_law,

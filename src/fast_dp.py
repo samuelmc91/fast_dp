@@ -6,16 +6,12 @@
 # intensities which have been scaled reasonably well. This relies heavily on
 # XDS, and forkintegrate in particular.
 
-from __future__ import division
-
 import sys
 import os
-import json
 import time
 import copy
-import re
+import exceptions
 import traceback
-import shutil
 
 if not 'FAST_DP_ROOT' in os.environ:
     raise RuntimeError, 'FAST_DP_ROOT not defined'
@@ -28,18 +24,18 @@ if not fast_dp_lib in sys.path:
 from run_job import get_number_cpus
 from cell_spacegroup import check_spacegroup_name, check_split_cell, \
      generate_primitive_cell
-import output
+from xml_output import write_ispyb_xml
 
 from image_readers import read_image_metadata, check_file_readable
 
-from autoindex import autoindex
+from autoindex import autoindex, check_colspot
 from integrate import integrate
 from scale import scale
-from merge import merge
-from pointgroup import decide_pointgroup
-from logger import write, set_afilename, set_afilepath, get_afilepath, set_afileprefix, get_afileprefix
-
-from optparse import SUPPRESS_HELP, OptionParser
+from merge import merge, merge_aimless
+from pointgroup import decide_pointgroup, getRes
+from logger import write
+from shutil import copyfile, rmtree
+import numpy as np
 
 class FastDP:
     '''A class to implement fast data processing for MX beamlines (at Diamond)
@@ -65,15 +61,11 @@ class FastDP:
         self._resolution_low = 30.0
         self._resolution_high = 0.0
 
-        # job control see -j -J -k command-line options below for node names
-        # see fast_dp#9
+        # job control see -j -J -k command-line options below
         self._n_jobs = 1
         self._n_cores = 0
         self._max_n_jobs = 0
         self._n_cpus = get_number_cpus()
-        self._plugin_library=" "
-        self._h5toxds=" "
-        self._execution_hosts = []
 
         # image ranges
         self._first_image = None
@@ -91,64 +83,39 @@ class FastDP:
 
         self._nref = 0
         self._xml_results = None
-        self._refined_beam = (0, 0)
+
+        # Software trigger for AMX/FMX at NSLS-II
+        self._sw_trigger = False
+
+        return
 
     def set_n_jobs(self, n_jobs):
         self._n_jobs = n_jobs
+        return
 
     def set_n_cores(self, n_cores):
         self._n_cores = n_cores
+        return
 
     def set_max_n_jobs(self, max_n_jobs):
         self._max_n_jobs = max_n_jobs
-
-    def set_execution_hosts(self, execution_hosts):
-        self._execution_hosts = execution_hosts
-        max_n_jobs = 0
-        for host in execution_hosts:
-            if ':' in host:
-                max_n_jobs += int(host.split(':')[1])
-        if max_n_jobs:
-            self._max_n_jobs = max_n_jobs
-        else:
-            self._max_n_jobs = len(execution_hosts)
-        self._n_jobs = 0
-
-        # add this to the metadata as "extra text"
-        et = self._metadata.get('extra_text', '')
-        self._metadata['extra_text'] = et + 'CLUSTER_NODES=%s\n' % \
-            ' '.join(execution_hosts)
-
-    def get_execution_hosts(self):
-        return self._execution_hosts
-
-    def set_pa_host(self, pa_host):
-        self._pa_host = pa_host
-        os.environ["FAST_DP_PA_HOST"]=pa_host
-
-    def get_pa_host(self):
-        return self._pa_host
-
-    def set_plugin_library(self, plugin_library):
-        write('set_plugin_library %s' % plugin_library)
-        self._plugin_library = plugin_library
-
-    def set_h5toxds(self, h5toxds):
-        write('set_h5toxds %s' % h5toxds)
-        self._h5toxds = h5toxds
-        os.environ['H5TOXDS_PATH'] = h5toxds
+        return
 
     def set_first_image(self, first_image):
         self._first_image = first_image
+        return
 
     def set_last_image(self, last_image):
         self._last_image = last_image
+        return
 
     def set_resolution_low(self, resolution_low):
         self._resolution_low = resolution_low
+        return
 
     def set_resolution_high(self, resolution_high):
         self._resolution_high = resolution_high
+        return
 
     def set_start_image(self, start_image):
         '''Set the image to work from: in the majority of cases this will
@@ -158,6 +125,7 @@ class FastDP:
         assert(self._start_image is None)
 
         # check input is image file
+        import os
         if not os.path.isfile(start_image):
             raise RuntimeError, 'no image provided: data collection cancelled?'
 
@@ -186,12 +154,7 @@ class FastDP:
 
         self._metadata['beam'] = beam
 
-    def set_distance(self, distance):
-        '''Set the detector distance, in mm.'''
-
-        assert(self._metadata)
-
-        self._metadata['distance'] = distance
+        return
 
     def set_atom(self, atom):
         '''Set the heavy atom, if appropriate.'''
@@ -200,11 +163,14 @@ class FastDP:
 
         self._metadata['atom'] = atom
 
+        return
+
     # N.B. these two methods assume that the input unit cell etc.
     # has already been tested at the option parsing stage...
 
     def set_input_spacegroup(self, input_spacegroup):
         self._input_spacegroup = input_spacegroup
+        return
 
     def set_input_cell(self, input_cell):
 
@@ -218,11 +184,19 @@ class FastDP:
         self._input_cell_p1 = generate_primitive_cell(
             self._input_cell, self._input_spacegroup).parameters()
 
+        return
+
+    def set_sw_trigger(self):
+        self._sw_trigger = True
+        return
+
     def _read_image_metadata(self):
         '''Get the information from the start image to the metadata bucket.
         For internal use only.'''
 
         assert(self._start_image)
+
+        return
 
     def get_metadata_item(self, item):
         '''Get a specific item from the metadata.'''
@@ -231,6 +205,22 @@ class FastDP:
         assert(item in self._metadata)
 
         return self._metadata[item]
+
+    def update_start(self):
+        new_start = check_colspot(self._metadata)
+        self._metadata['start'] = new_start
+
+#        old_xparm = open('XPARM.XDS').readlines()
+#        new_xparm = ""
+#
+#        for i in range(len(old_xparm)):
+#            if i == 1:
+#                new_xparm += "%6d %s" % (new_start, old_xparm[i][7:])
+#            else:
+#                new_xparm += old_xparm[i]
+#
+#        open('XPARM.XDS', 'w').write(new_xparm)
+
 
     def process(self):
         '''Main routine, chain together all of the steps imported from
@@ -241,7 +231,7 @@ class FastDP:
             hostname = os.environ['HOSTNAME'].split('.')[0]
             write('Running on: %s' % hostname)
 
-        except Exception:
+        except:
             pass
 
         # check input frame limits
@@ -292,46 +282,25 @@ class FastDP:
         write('Wavelength: %.5f' % self._metadata['wavelength'])
         write('Working in: %s' % os.getcwd())
 
-
-        if self._plugin_library != " " and self._plugin_library != "None":
-            self._metadata['extra_text'] = "LIB="+self._plugin_library
-        elif self._plugin_library == "None":
-            self._metadata['extra_text'] = None
- 
-        write('Extra commands: %s' % self._metadata['extra_text'])
-
         try:
             self._p1_unit_cell = autoindex(self._metadata,
                                            input_cell = self._input_cell_p1)
-        except Exception as e:
-            traceback.print_exc(file = open('fast_dp.error', 'w'))
+        except exceptions.Exception, e:
+            traceback.print_exc(file = open('fast_dp_pro.error', 'w'))
             write('Autoindexing error: %s' % e)
-            fdpelogpath = get_afilepath()
-            fdpelogprefix = get_afileprefix()
-            if fdpelogpath:
-                try:
-                    shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
-                    write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
-                except:
-                    write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
             return
+
+        if self._sw_trigger:
+            self.update_start()
 
         try:
             mosaics = integrate(self._metadata, self._p1_unit_cell,
                                 self._resolution_low, self._n_jobs,
-                                self._n_cores)
+                                self._n_cores, self._sw_trigger)
             write('Mosaic spread: %.2f < %.2f < %.2f' % tuple(mosaics))
-        except RuntimeError as e:
-            traceback.print_exc(file = open('fast_dp.error', 'w'))
+        except RuntimeError, e:
+            traceback.print_exc(file = open('fast_dp_pro.error', 'w'))
             write('Integration error: %s' % e)
-            fdpelogpath = get_afilepath()
-            fdpelogprefix = get_afileprefix()
-            if fdpelogpath:
-                try:
-                    shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
-                    write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
-                except:
-                    write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
             return
 
         try:
@@ -352,35 +321,123 @@ class FastDP:
             if not self._resolution_high:
                 self._resolution_high = resol
 
-        except RuntimeError as e:
+        except RuntimeError, e:
             write('Pointgroup error: %s' % e)
             return
 
-        try:
-            self._unit_cell, self._space_group, self._nref, beam_pixels = \
-            scale(self._unit_cell, self._metadata, self._space_group_number, \
-                   self._resolution_high)
-            self._refined_beam = (self._metadata['pixel'][1] * beam_pixels[1],
-                                  self._metadata['pixel'][0] * beam_pixels[0])
+        n10 = int((self._metadata['end']-self._metadata['start']+1)/10)
+	np10 = n10*self._metadata['phi_width']
+	origPhiEnd = phi_end
+	origPhiStart = self._metadata['phi_start']
+	origEnd = self._metadata['end']
+	origStart = self._metadata['start']
+	cPath = os.getcwd()
+	results = [None for y in range(0,55)]
+	i = 0
+	for x in range(0, 10):
+		phi_end = origPhiEnd
+		self._metadata['end'] = origEnd
+		for y in range(0, 10-x):
+			tPath = cPath+"/"+str(self._metadata['start'])+"-"+str(self._metadata['end'])
+			if not os.path.exists(tPath):
+	    			os.makedirs(tPath)
+			copyfile("INTEGRATE.HKL", tPath+"/INTEGRATE.HKL")
+			copyfile("X-CORRECTIONS.cbf", tPath+"/X-CORRECTIONS.cbf")
+			copyfile("Y-CORRECTIONS.cbf", tPath+"/Y-CORRECTIONS.cbf")
+			os.chdir(tPath)
+			tfile = open(self._metadata['template'].split("?")[0]+str(self._metadata['start'])+"-"+str(self._metadata['end'])+"_fast_dp_pro.log", "w")
+			#write('Processing images: %d -> %d' % (self._metadata['start'], self._metadata['end']))
+			#write('Phi range: %.2f -> %.2f' % (self._metadata['phi_start'], phi_end))
+			self._resolution_high = getRes(self._p1_unit_cell, self._metadata)
+			try:
+			    self._unit_cell, self._space_group, self._nref, refined_beam = \
+			    scale(self._unit_cell, self._metadata, self._space_group_number,\
+				   self._resolution_high)
+			except RuntimeError, e:
+			    write('Scaling error: %s' % e)
+			    return
 
-        except RuntimeError as e:
-            write('Scaling error: %s' % e)
-            return
-
-        try:
-            n_images = self._metadata['end'] - self._metadata['start'] + 1
-            self._xml_results = merge()
-            mtzlogpath = get_afilepath()
-            mtzlogprefix = get_afileprefix()
-            if mtzlogpath:
-               try:
-                   shutil.copyfile('fast_dp.mtz',os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz'))
-                   write('Archived fast_dp.mtz to %s' % os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')) 
-               except:
-                   write('fast_dp.mtz not archived to %s' % os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')) 
-        except RuntimeError as e:
-            write('Merging error: %s' % e)
-            return
+			try:
+			    n_images = self._metadata['end'] - self._metadata['start'] + 1
+			    results[i] = merge_aimless()
+			    results[i]['start'] = self._metadata['start']
+			    results[i]['end'] = self._metadata['end']
+			    results[i]['phi_start'] = self._metadata['phi_start']
+			    results[i]['zx'] = 9-x-y
+			    results[i]['zy'] = 9-x
+			    results[i]['n10'] = n10
+			    results[i]['np10'] = np10
+			    results[i]['ops'] = origPhiStart
+			    results[i]['ope'] = origPhiEnd
+			    tfile.write('Range: ' + str(results[i]['start']) + ' -> ' + str(results[i]['end']))
+			    tfile.write('\n%20s ' % 'Low resolution'     + '%6.2f ' % results[i]['resol_low_overall'] + '%6.2f ' % results[i]['resol_low_inner']  + '%6.2f\n' % results[i]['resol_low_outer'])
+			    tfile.write('%20s ' % 'High resolution'    + '%6.2f ' % results[i]['resol_high_overall'] + '%6.2f ' % results[i]['resol_high_inner']  + '%6.2f\n' % results[i]['resol_high_outer'])
+			    tfile.write('%20s ' % 'Rmerge'             + '%6.3f ' % results[i]['rmerge_overall'] + '%6.3f ' % results[i]['rmerge_inner']  + '%6.3f\n' % results[i]['rmerge_outer'])
+			    tfile.write('%20s ' % 'Rpim'             + '%6.3f ' % results[i]['rpim_overall'] + '%6.3f ' % results[i]['rpim_inner']  + '%6.3f\n' % results[i]['rpim_outer'])
+			    tfile.write('%20s ' % 'I/sigma'            + '%6.2f ' % results[i]['isigma_overall'] + '%6.2f ' % results[i]['isigma_inner']  + '%6.2f\n' % results[i]['isigma_outer'])
+			    tfile.write('%20s ' % 'Completeness'       + '%6.1f ' % results[i]['completeness_overall'] + '%6.1f ' % results[i]['completeness_inner']  + '%6.1f\n' % results[i]['completeness_outer'])
+			    tfile.write('%20s ' % 'Multiplicity'       + '%6.1f ' % results[i]['multiplicity_overall'] + '%6.1f ' % results[i]['multiplicity_inner']  + '%6.1f\n' % results[i]['multiplicity_outer'])
+			    tfile.write('%20s ' % 'CC 1/2'             + '%6.1f ' % results[i]['cchalf_overall'] + '%6.1f ' % results[i]['cchalf_inner']  + '%6.1f\n' % results[i]['cchalf_outer'])
+			    tfile.write('%20s ' % 'Anom. Completeness' + '%6.1f ' % results[i]['acompleteness_overall'] + '%6.1f ' % results[i]['acompleteness_inner']  + '%6.1f\n' % results[i]['acompleteness_outer'])
+			    tfile.write('%20s ' % 'Anom. Multiplicity' + '%6.1f ' % results[i]['amultiplicity_overall'] + '%6.1f ' % results[i]['amultiplicity_inner']  + '%6.1f\n' % results[i]['amultiplicity_outer'])
+			    tfile.write('%20s ' % 'Anom. Correlation'  + '%6.1f ' % results[i]['ccanom_overall'] + '%6.1f ' % results[i]['ccanom_inner']  + '%6.1f\n' % results[i]['ccanom_outer'])
+			    tfile.write('%20s ' % 'Nrefl'              + '%6d ' % results[i]['nref_overall'] + '%6d ' % results[i]['nref_inner']  + '%6d\n' % results[i]['nref_outer'])
+			    tfile.write('%20s ' % 'Nunique'            + '%6d ' % results[i]['nunique_overall'] + '%6d ' % results[i]['nunique_inner']  + '%6d\n' % results[i]['nunique_outer'])
+			    i += 1
+			except RuntimeError, e:
+			    write('Merging error: %s' % e)
+			    return
+			copyfile("fast_dp_pro.mtz", self._metadata['template'].split("?")[0]+str(self._metadata['start'])+"-"+str(self._metadata['end'])+"_fast_dp_pro.mtz")
+			tfile.close()
+			self._metadata['end'] -= n10
+			phi_end -= np10
+			os.chdir(cPath)
+			print ' [' + ('-'*i) + (' '*(55-i)) + ']\r',
+		self._metadata['start'] += n10
+		self._metadata['phi_start'] += np10
+	results = sorted(results, key=lambda k : (k['rmerge_overall'], -k['completeness_overall']))
+	np.save('results.npy', results)
+	c = 0
+	i = 0
+	write(80 * '-')
+	while i<55 and c<20:
+		if results[i]['completeness_overall'] > 97:
+			if c == 0:
+				bestPath = str(results[i]['start']) + '-' + str(results[i]['end']) + "(BestRange)"
+				if os.path.exists(bestPath):
+					rmtree(bestPath, ignore_errors=False, onerror=None)
+				os.rename(str(results[i]['start']) + '-' + str(results[i]['end']), bestPath)
+				write('Best range: ' + str(results[i]['start']) + ' -> ' + str(results[i]['end']))
+				self._xml_results = results[i]
+			else:
+				write(str(c+1) + ' range: ' + str(results[i]['start']) + ' -> ' + str(results[i]['end']))
+			write('%20s ' % 'Low resolution'     + '%6.2f ' % results[i]['resol_low_overall'] + '%6.2f ' % results[i]['resol_low_inner']  + '%6.2f' % results[i]['resol_low_outer'])
+			write('%20s ' % 'High resolution'    + '%6.2f ' % results[i]['resol_high_overall'] + '%6.2f ' % results[i]['resol_high_inner']  + '%6.2f' % results[i]['resol_high_outer'])
+			write('%20s ' % 'Rmerge'             + '%6.3f ' % results[i]['rmerge_overall'] + '%6.3f ' % results[i]['rmerge_inner']  + '%6.3f' % results[i]['rmerge_outer'])
+			write('%20s ' % 'Rpim'             + '%6.3f ' % results[i]['rpim_overall'] + '%6.3f ' % results[i]['rpim_inner']  + '%6.3f' % results[i]['rpim_outer'])
+			write('%20s ' % 'I/sigma'            + '%6.2f ' % results[i]['isigma_overall'] + '%6.2f ' % results[i]['isigma_inner']  + '%6.2f' % results[i]['isigma_outer'])
+			write('%20s ' % 'Completeness'       + '%6.1f ' % results[i]['completeness_overall'] + '%6.1f ' % results[i]['completeness_inner']  + '%6.1f' % results[i]['completeness_outer'])
+			write('%20s ' % 'Multiplicity'       + '%6.1f ' % results[i]['multiplicity_overall'] + '%6.1f ' % results[i]['multiplicity_inner']  + '%6.1f' % results[i]['multiplicity_outer'])
+			write('%20s ' % 'CC 1/2'             + '%6.1f ' % results[i]['cchalf_overall'] + '%6.1f ' % results[i]['cchalf_inner']  + '%6.1f' % results[i]['cchalf_outer'])
+			write('%20s ' % 'Anom. Completeness' + '%6.1f ' % results[i]['acompleteness_overall'] + '%6.1f ' % results[i]['acompleteness_inner']  + '%6.1f' % results[i]['acompleteness_outer'])
+			write('%20s ' % 'Anom. Multiplicity' + '%6.1f ' % results[i]['amultiplicity_overall'] + '%6.1f ' % results[i]['amultiplicity_inner']  + '%6.1f' % results[i]['amultiplicity_outer'])
+			write('%20s ' % 'Anom. Correlation'  + '%6.1f ' % results[i]['ccanom_overall'] + '%6.1f ' % results[i]['ccanom_inner']  + '%6.1f' % results[i]['ccanom_outer'])
+			write('%20s ' % 'Nrefl'              + '%6d ' % results[i]['nref_overall'] + '%6d ' % results[i]['nref_inner']  + '%6d' % results[i]['nref_outer'])
+			write('%20s ' % 'Nunique'            + '%6d ' % results[i]['nunique_overall'] + '%6d ' % results[i]['nunique_inner']  + '%6d' % results[i]['nunique_outer'])
+			#write('%20s ' % 'Mid-slope'          + '%6.3f' % results[i])
+			#write('%20s ' % 'dF/F'               + '%6.3f' % results[i])
+			#write('%20s ' % 'dI/sig(dI)'         + '%6.3f' % results[i])
+			write(80 * '-')
+			c += 1
+		i += 1
+	if c == 0:
+		write('No data meets the requirements')
+		write(80 * '-')
+	else:
+		# write out the xml
+		write_ispyb_xml(self._commandline, self._space_group,
+                        self._unit_cell, self._xml_results,
+                        self._start_image)
 
         write('Merging point group: %s' % self._space_group)
         write('Unit cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
@@ -392,29 +449,23 @@ class FastDP:
                              time.gmtime(duration)), duration,
                self._nref))
         write('RPS: %.1f' % (float(self._nref) / duration))
-
-        # write out json and xml
-        for func in (output.write_json, output.write_ispyb_xml):
-          func(self._commandline, self._space_group,
-               self._unit_cell, self._xml_results,
-               self._start_image, self._refined_beam)
+	copyfile("fast_dp_pro.log", self._metadata['template'].split("?")[0]+"fast_dp_pro.log")
+        return
 
 def main():
     '''Main routine for fast_dp.'''
 
+    import os
     os.environ['FAST_DP_FORKINTEGRATE'] = '1'
+
+    from optparse import OptionParser
 
     commandline = ' '.join(sys.argv)
 
-    parser = OptionParser(usage="fast_dp [options] imagefile")
-
-    parser.add_option("-?", action="help", help=SUPPRESS_HELP)
+    parser = OptionParser()
 
     parser.add_option('-b', '--beam', dest = 'beam',
                       help = 'Beam centre: x, y (mm)')
-
-    parser.add_option('-d', '--distance', dest = 'distance',
-                      help = 'Detector distance: d (mm)')
 
     parser.add_option('-a', '--atom', dest = 'atom',
                       help = 'Atom type (e.g. Se)')
@@ -426,32 +477,10 @@ def main():
     parser.add_option('-J', '--maximum-number-of-jobs',
                       dest = 'maximum_number_of_jobs',
                       help = 'Maximum number of jobs for integration')
-    parser.add_option('-l', '--lib',
-                      metavar = "PLUGIN_LIBRARY",
-                      dest = 'plugin_library',
-                      help = 'image reader plugin path, ending with .so or "None"')
-    parser.add_option('-5', '--h5toxds',
-                      metavar = "H5TOXDS",
-                      dest = 'h5toxds',
-                      help = 'program name or path for H5ToXds binary')
-
-    parser.add_option('-e', '--execution-hosts',
-                      '-n', '--cluster-nodes',
-                      metavar = "CLUSTER_NODES",
-                      dest = 'execution_hosts',
-                      help = 'names or ip addresses for execution hosts for forkxds')
-
-    parser.add_option('-p', '--pointless-aimless-host',
-                      metavar = "POINTLESS_AIMLESS_HOST",
-                      dest = 'pa_host',
-                      help = 'name or ip address for execution host for pointless and aimless')
-
 
     parser.add_option('-c', '--cell', dest = 'cell',
                       help = 'Cell constants for processing, needs spacegroup')
-    parser.add_option('-s', '--spacegroup',
-                      metavar = "SPACEGROUP",
-                      dest = 'spacegroup',
+    parser.add_option('-s', '--spacegroup', dest = 'spacegroup',
                       help = 'Spacegroup for scaling and merging')
 
     parser.add_option('-1', '--first-image', dest = 'first_image',
@@ -463,73 +492,16 @@ def main():
                       help = 'High resolution limit')
     parser.add_option('-R', '--resolution-low', dest = 'resolution_low',
                       help = 'Low resolution limit')
-    parser.add_option('-o', '--component-offsets',
-                      metavar = "COMPONENT",
-                      dest = 'component_offsets',
-                      help = 'Component offsets into working directory path: log_offset, prefix_start, prefix_end')
+
+    parser.add_option('--sw-trigger', dest = 'sw_trigger',
+                      action='store_true',
+                      help = 'Software trigger')
 
     (options, args) = parser.parse_args()
 
-    if len(args) != 1:
-      sys.exit("You must point to one image of the dataset to process")
+    assert(len(args) == 1)
 
     image = args[0]
-
-    xia2_format = re.match(r"^(.*):(\d+):(\d+)$", image)
-    if xia2_format:
-      # Image can be given in xia2-style format, ie.
-      #   set_of_images_00001.cbf:1:5000
-      # to select images 1 to 5000. Resolve any conflicts
-      # with -1/-N in favour of the explicit arguments.
-      image = xia2_format.group(1)
-      if not options.first_image:
-        options.first_image = xia2_format.group(2)
-      if not options.last_image:
-        options.last_image = xia2_format.group(3)
-
-    #set up logging, at designated component if found, or in CWD otherwise
-    # The default is to just write fast_dp.log in CWD
-    # Component -1 is CWD itself.  The next level up is -2, etc.
-    # if name_start is -1, the log name is fast_dp.log.  If log_offset is
-    # also -1 or is 0, no additional log is written, otherwise the '_' separated
-    # concatenation of the components prefixed to '_fast_dp.log' is the
-    # name of the log file
-
-    log_archive_path = os.getcwd()
-    log_archive_prefix = ''
-    if not options.component_offsets:
-        options.component_offsets = os.getenv('FAST_DP_LOG_COMPONENT_OFFSETS','0,0,0')
-    log_offset,prefix_start,prefix_end = options.component_offsets.split(',')
-    log_offset = int(log_offset)
-    prefix_start = int(prefix_start)
-    prefix_end = int(prefix_end)
-    cur_offset = -1
-    head = log_archive_path
-    components={}
-    paths={}
-    while head:
-        paths[cur_offset] = head
-        (head,tail) = os.path.split(head)
-        components[cur_offset] = tail
-        cur_offset = cur_offset -1
-        if head=='/':
-            break
-    if log_offset <= -1 and log_offset > cur_offset:
-        try:
-            log_archive_path = paths[log_offset]
-        except:
-            log_archive_path = os.getcwd()
-    if prefix_start <= prefix_end and prefix_end <= 0 and prefix_start > cur_offset:
-        cur_offset = prefix_start
-        while cur_offset <= prefix_end:
-            log_archive_prefix = log_archive_prefix+components[cur_offset]+'_'
-            cur_offset = cur_offset+1
-    write('log_archive_path: %s'% log_archive_path)
-    write('log_archive_prefix: %s'% log_archive_prefix)
-    if (log_offset < -1):
-        set_afilepath(log_archive_path)
-        set_afileprefix(log_archive_prefix)
-        set_afilename(os.path.join(log_archive_path,log_archive_prefix+"fast_dp.log"))
 
     try:
         fast_dp = FastDP()
@@ -541,21 +513,11 @@ def main():
             x, y = tuple(map(float, options.beam.split(',')))
             fast_dp.set_beam((x, y))
 
-        if options.distance:
-            fast_dp.set_distance(float(options.distance))
-
         if options.atom:
             fast_dp.set_atom(options.atom)
 
         if options.maximum_number_of_jobs:
             fast_dp.set_max_n_jobs(int(options.maximum_number_of_jobs))
-
-        if options.execution_hosts:
-            fast_dp.set_execution_hosts(options.execution_hosts.split(','))
-            write('Execution hosts: %s' % ' '.join(fast_dp.get_execution_hosts()))
-        if options.pa_host:
-            fast_dp.set_pa_host(options.pa_host)
-            write('pointless/aimless host: %s' % fast_dp.get_pa_host())
 
         if options.number_of_jobs:
             if options.maximum_number_of_jobs:
@@ -568,16 +530,6 @@ def main():
         if options.number_of_cores:
             n_cores = int(options.number_of_cores)
             fast_dp.set_n_cores(n_cores)
-
-        if options.plugin_library:
-            fast_dp.set_plugin_library(options.plugin_library)
-        else:
-            fast_dp.set_plugin_library(" ")
-
-        if options.h5toxds:
-            fast_dp.set_h5toxds(options.h5toxds)
-        else:
-            fast_dp.set_h5toxds(" ")
 
         if options.first_image:
             first_image = int(options.first_image)
@@ -607,7 +559,7 @@ def main():
                 spacegroup = check_spacegroup_name(options.spacegroup)
                 fast_dp.set_input_spacegroup(spacegroup)
                 write('Set spacegroup: %s' % spacegroup)
-            except RuntimeError:
+            except RuntimeError, e:
                 write('Spacegroup %s not recognised: ignoring' % \
                       options.spacegroup)
 
@@ -617,31 +569,17 @@ def main():
             write('Set cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
             fast_dp.set_input_cell(cell)
 
+        if options.sw_trigger:
+            fast_dp.set_sw_trigger()
+
         fast_dp.process()
 
-    except Exception as e:
-        traceback.print_exc(file = open('fast_dp.error', 'w'))
+    except exceptions.Exception, e:
+        traceback.print_exc(file = open('fast_dp_pro.error', 'w'))
         write('Fast DP error: %s' % str(e))
-        fdpelogpath = get_afilepath()
-        fdpelogprefix = get_afileprefix()
-        if fdpelogpath:
-           try:
-               shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
-               write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
-           except:
-               write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
 
-
-    json_stuff = { }
-    for prop in dir(fast_dp):
-        ignore = ['_read_image_metadata']
-        if not prop.startswith('_') or prop.startswith('__'):
-            continue
-        if prop in ignore:
-            continue
-        json_stuff[prop] = getattr(fast_dp, prop)
-    with open('fast_dp.state', 'wb') as fh:
-      json.dump(json_stuff, fh)
+    return
 
 if __name__ == '__main__':
+
     main()

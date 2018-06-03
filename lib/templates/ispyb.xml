@@ -11,11 +11,6 @@
 <fileName>fast_dp.log</fileName>
 <filePath>{results_directory:s}</filePath>
 </AutoProcProgramAttachment>
-<AutoProcProgramAttachment>
-<fileType>Result</fileType>
-<fileName>fast_dp.mtz</fileName>
-<filePath>{results_directory:s}</filePath>
-</AutoProcProgramAttachment>
 </AutoProcProgramContainer>
 
 <AutoProc>
@@ -97,8 +92,6 @@
 <cell_alpha>{cell_alpha:f}</cell_alpha>
 <cell_beta>{cell_beta:f}</cell_beta>
 <cell_gamma>{cell_gamma:f}</cell_gamma>
-<refinedXBeam>{refined_beam_x:f}</refinedXBeam>
-<refinedYBeam>{refined_beam_y:f}</refinedYBeam>
 </AutoProcIntegration>
 </AutoProcIntegrationContainer>
 </AutoProcScalingContainer>

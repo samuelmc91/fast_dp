@@ -10,6 +10,9 @@ def image2template(filename):
     if filename.count('#'):
         raise RuntimeError, '# characters in filename'
 
+    if 'master.h5' in filename[-9:]:
+        return filename.replace('master', '??????')
+
     # the patterns in the order I want to test them
 
     pattern_keys = [r'([^\.]*)\.([0-9]+)\Z',
@@ -90,6 +93,14 @@ def find_matching_images(template, directory):
     '''Find images which match the input template in the directory
     provided.'''
 
+    if '.h5' in template[-3:]:
+        import h5py
+        h5file = h5py.File(os.path.join(directory,
+                                        template.replace('??????','master')),
+                           'r')
+        images = range(1, h5file["/entry/sample/goniometer/omega"].len()+1)
+        return images
+
     files = os.listdir(directory)
 
     # to turn the template to a regular expression want to replace
@@ -120,6 +131,11 @@ def find_matching_images(template, directory):
 def template_directory_number2image(template, directory, number):
     '''Construct the full path to an image from the template, directory
     and image number.'''
+
+    if '.h5' in template[-3:]:
+        image = os.path.join(directory,
+                             template.replace('??????', 'master'))
+        return image
 
     length = template.count('#')
 

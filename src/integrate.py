@@ -4,7 +4,7 @@ import shutil
 from xds_writer import write_xds_inp_integrate
 from run_job import run_job
 
-def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
+def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors, sw_trigger=False):
     '''Peform the integration with a triclinic basis.'''
 
     assert(metadata)
@@ -17,6 +17,18 @@ def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
 
     write_xds_inp_integrate(metadata, xds_inp, resolution_low,
                             no_jobs=n_jobs, no_processors=n_processors)
+
+    if sw_trigger:
+        fin = open('INTEGRATE.INP')
+        inp = fin.readlines()
+        fin.close()
+        fout = open('INTEGRATE.INP', 'w')
+        for i in inp:
+            if i.startswith("JOB"):
+                fout.write("JOB=INIT DEFPIX INTEGRATE\n")
+            else:
+                fout.write(i)
+        fout.close()
 
     shutil.copyfile(xds_inp, 'XDS.INP')
 

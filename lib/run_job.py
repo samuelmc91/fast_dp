@@ -33,7 +33,6 @@ def run_job(executable, arguments = [], stdin = [], working_directory = None):
         if not record:
             break
 
-        #print record
         output.append(record)
 
     return output

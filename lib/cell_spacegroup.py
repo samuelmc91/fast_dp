@@ -24,16 +24,11 @@ def ersatz_pointgroup(spacegroup_name):
         raise RuntimeError, 'spacegroup %s unknown' % spacegroup_name
 
     # FIXME this is probably not correct for small molecule work...
-    # just be aware of this, in no danger right now of handling non-chiral
-    # spacegroups
 
     if '/' in pg:
         pg = pg.split('/')[0]
 
     result = spacegroup_name[0] + pg
-
-    if 'H3' in result:
-        result = result.replace('H3', 'R3')
 
     return result
 
@@ -41,11 +36,6 @@ def spacegroup_to_lattice(input_spacegroup):
     ''' This generates a lattics from a the imported file bu chopping off
     the first letter of the cell type, changing to lowercase and then
     prepending it to the first letter of the spacegroup.'''
-
-    def fix_hH(lattice):
-        if lattice != 'hH':
-            return lattice
-        return 'hR'
 
     mapping = {'TRICLINIC':'a',
                'MONOCLINIC':'m',
@@ -55,16 +45,13 @@ def spacegroup_to_lattice(input_spacegroup):
                'HEXAGONAL':'h',
                'CUBIC':'c'}
 
-    if type(input_spacegroup) == type(u''):
-        input_spacegroup = str(input_spacegroup)
-
     if type(input_spacegroup) == type(''):
         for record in open(
             os.path.join(os.environ['CLIBD'], 'symop.lib'), 'r').readlines():
             if ' ' in record[:1]:
                 continue
             if input_spacegroup == record.split()[3]:
-                return fix_hH(mapping[record.split()[5]] + record.split()[3][0])
+                return mapping[record.split()[5]] + record.split()[3][0]
 
     elif type(input_spacegroup) == type(0):
         for record in open(
@@ -72,7 +59,7 @@ def spacegroup_to_lattice(input_spacegroup):
             if ' ' in record[:1]:
                 continue
             if input_spacegroup == int(record.split()[0]):
-                return fix_hH(mapping[record.split()[5]] + record.split()[3][0])
+                return mapping[record.split()[5]] + record.split()[3][0]
 
     else:
         raise RuntimeError, 'bad type for input: %s' % type(input_spacegroup)
@@ -165,7 +152,7 @@ def lattice_to_spacegroup(lattice):
         'aP':1,   'mP':3,   'mC':5,   'mI':5,
         'oP':16,  'oC':21,  'oI':23,  'oF':22,
         'tP':75,  'tI':79,  'hP':143, 'hR':146,
-        'hH':146, 'cP':195, 'cF':196, 'cI':197
+        'cP':195, 'cF':196, 'cI':197
         }
 
     return l2s[lattice]

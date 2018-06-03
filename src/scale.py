@@ -50,23 +50,22 @@ def scale(unit_cell, metadata, space_group_number, resolution_high):
         space_group = spacegroup_number_to_name(int(gxparm[7].split()[0]))
         unit_cell = tuple(map(float, gxparm[7].split()[1:]))
 
+    # and the globally postrefined unit cell in XDS land...
+
+    refined_beam = tuple(map(float, gxparm[3].split()[1:]))
+
     # FIXME also get the postrefined mosaic spread out...
 
     space_group = space_group
     unit_cell = unit_cell
 
     # and the total number of good reflections
-    nref = 0
 
-    # set the refined beam in case it was not refined correctly in the
-    # global refinement (this probably indicates a bigger problem anyway)
-    refined_beam = 0, 0
+    nref = 0
 
     for record in open('CORRECT.LP', 'r').readlines():
         if 'NUMBER OF ACCEPTED OBSERVATIONS' in record:
-            nref = int(record.replace(')', ') ').split()[-1])
-        if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in record:
-            refined_beam = tuple(map(float, record.split()[-2:]))
+            nref = int(record.split()[-1])
 
     # hack in xdsstat (but don't cry if it fails)
 

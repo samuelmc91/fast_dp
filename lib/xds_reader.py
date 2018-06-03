@@ -32,11 +32,6 @@ def read_xds_idxref_lp(idxref_lp_file):
             else:
                 results[spacegroup] = penalty, constrained_cell
 
-        if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in record:
-            results['beam centre pixels'] = map(float, record.split()[-2:])
-
-    assert('beam centre pixels' in results)
-
     return results
 
 def read_xds_correct_lp(correct_lp_file):

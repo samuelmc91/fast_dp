@@ -27,9 +27,6 @@ def autoindex(metadata, input_cell = None):
 
     log = run_job('xds_par')
 
-    with open('autoindex.log', 'w') as fout:
-        fout.write(''.join(log))
-
     # sequentially check for errors... XYCORR INIT COLSPOT IDXREF
 
     for step in ['XYCORR', 'INIT', 'COLSPOT', 'IDXREF']:
@@ -49,8 +46,6 @@ def autoindex(metadata, input_cell = None):
           ('Lattice', 'a', 'b', 'c', 'alpha', 'beta', 'gamma'))
 
     for r in reversed(sorted(results)):
-        if not type(r) == type(1):
-            continue
         cell = results[r][1]
         write('%7s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
               (spacegroup_to_lattice(r), cell[0], cell[1], cell[2],
@@ -62,3 +57,34 @@ def autoindex(metadata, input_cell = None):
         return results[1][1]
     except:
         raise RuntimeError, 'getting P1 cell for autoindex'
+
+def check_colspot(metadata):
+    '''Read COLSPOT.LP and check whether first few frames are blank images
+    due to the non-synchronization between the detector and motors'''
+
+    lines = open('COLSPOT.LP').readlines()
+
+    frames = []
+    nspots = []
+    i = 0
+    colspot_log = False
+
+    while i < len(lines):
+        line = lines[i]
+        if 'FRAME #' in line:
+            colspot_log = True
+        elif 'NUMBER OF STRONG PIXELS EXTRACTED FROM IMAGES' in line:
+            colspot_log = False
+
+        if colspot_log and len(line.split()) == 4:
+            frames.append(int(line.split()[0]))
+            nspots.append(int(line.split()[2]))
+
+        i += 1
+
+    for j in range(len(nspots)):
+        if nspots[j] > 0:
+            frame_start = frames[j] + 1
+            break
+
+    return frame_start
