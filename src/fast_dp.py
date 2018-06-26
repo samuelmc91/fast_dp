@@ -293,9 +293,9 @@ class FastDP:
         write('Working in: %s' % os.getcwd())
 
 
-        if self._plugin_library != " " and self._plugin_library != "None":
+        if self._plugin_library != " " and self._plugin_library != "None" and self._plugin_library != "none":
             self._metadata['extra_text'] = "LIB="+self._plugin_library
-        elif self._plugin_library == "None":
+        elif self._plugin_library == "None" or self._plugin_library == "none":
             self._metadata['extra_text'] = None
  
         write('Extra commands: %s' % self._metadata['extra_text'])
@@ -576,6 +576,7 @@ def main():
 
         if options.h5toxds:
             fast_dp.set_h5toxds(options.h5toxds)
+            fast_dp.set_plugin_library("None")
         else:
             fast_dp.set_h5toxds(" ")
 

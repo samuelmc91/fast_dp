@@ -26,13 +26,25 @@ def get_dectris_serial_no(record):
     return tokens[tokens.index('S/N') + 1]
 
 __hdf5_lib = ''
+__eiger_lib = ''
 def find_hdf5_lib():
   global __hdf5_lib
+  global __eiger_lib
+  if __eiger_lib:
+    return __eiger_lib
   if __hdf5_lib:
     return __hdf5_lib
   import os
   for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.exists(os.path.join(d, 'xds_par')):
+    if os.path.isfile(os.path.join(d, 'eiger2cbf-so-worker')):
+       if os.path.isfile(os.path.join(d, 'eiger2cbf.so')):
+          __eiger_lib ='LIB=%s\n' % os.path.join(d,'eiger2cbf.so')
+          return __eiger_lib
+       elif  os.path.isfile(os.path.join(d, '..','lib','eiger2cbf.so')):
+          __eiger_lib ='LIB=%s\n' % os.path.join(d,'..','lib','eiger2cbf.so')
+          return __eiger_lib
+  for d in os.environ['PATH'].split(os.pathsep):
+    if os.path.isfile(os.path.join(d, 'xds_par')):
       __hdf5_lib = 'LIB=%s\n' % os.path.join(d,'dectris-neggia.so')
       return __hdf5_lib
   return ''
