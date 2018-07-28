@@ -116,7 +116,11 @@ class FastDP:
 
         # add this to the metadata as "extra text"
         et = self._metadata.get('extra_text', '')
-        self._metadata['extra_text'] = et + 'CLUSTER_NODES=%s\n' % \
+        if et == None:
+            self._metadata['extra_text'] = 'CLUSTER_NODES=%s\n' % \
+            ' '.join(execution_hosts)
+        else:
+            self._metadata['extra_text'] = et + 'CLUSTER_NODES=%s\n' % \
             ' '.join(execution_hosts)
 
     def get_execution_hosts(self):
@@ -192,6 +196,13 @@ class FastDP:
         assert(self._metadata)
 
         self._metadata['distance'] = distance
+
+    def set_wavelength(self, wavelength):
+        '''Set the detector wavelength, in Angstroms.'''
+
+        assert(self._metadata)
+
+        self._metadata['wavelength'] = wavelength
 
     def set_atom(self, atom):
         '''Set the heavy atom, if appropriate.'''
@@ -294,9 +305,28 @@ class FastDP:
 
 
         if self._plugin_library != " " and self._plugin_library != "None" and self._plugin_library != "none":
-            self._metadata['extra_text'] = "LIB="+self._plugin_library
+            oet = self._metadata['extra_text']
+            et = None
+            for line in oet.split('\n'):
+                if line[0:3] != "LIB=":
+                    if et==None:
+                        et=line+"\n"
+                    else:
+                        et = et+line+"\n"
+            if et==None:
+                self._metadata['extra_text'] = "LIB="+self._plugin_library+"\n"
+            else:
+                self._metadata['extra_text'] = et+"LIB="+self._plugin_library+"\n"
         elif self._plugin_library == "None" or self._plugin_library == "none":
-            self._metadata['extra_text'] = None
+            oet = self._metadata['extra_text']
+            et = None
+            for line in oet.split('\n'):
+                if line[0:3] != "LIB=":
+                    if et==None:
+                        et=line+"\n"
+                    else:
+                        et = et+line+"\n"
+            self._metadata['extra_text'] = et
  
         write('Extra commands: %s' % self._metadata['extra_text'])
 
@@ -415,6 +445,9 @@ def main():
 
     parser.add_option('-d', '--distance', dest = 'distance',
                       help = 'Detector distance: d (mm)')
+
+    parser.add_option('-w', '--wavelength', dest = 'lambd',
+                      help = 'Wavelength: lambd (Angstroms)')
 
     parser.add_option('-a', '--atom', dest = 'atom',
                       help = 'Atom type (e.g. Se)')
@@ -543,6 +576,9 @@ def main():
 
         if options.distance:
             fast_dp.set_distance(float(options.distance))
+
+        if options.lambd:
+            fast_dp.set_wavelength(float(options.lambd))
 
         if options.atom:
             fast_dp.set_atom(options.atom)
