@@ -4,8 +4,8 @@ if [ "${FAST_DP_PA_HOST}xx" == "xx" ]; then
        export CCP4=;export PHENIX=;source ${FAST_DP_ROOT}/fast_dp.ini;
     fi
     echo "on `hostname` in $PWD: `which pointless` $@"; pointless $@
-fi
+else
 ssh $FAST_DP_PA_HOST \
  "export CCP4=;export PHENIX=;source ${FAST_DP_ROOT}/fast_dp.ini; cd $PWD;"\
  "echo on $FAST_DP_PA_HOST in $PWD: \"$CCP4\"/bin/pointless $@; \"$CCP4\"/bin/pointless $@"
-
+fi

@@ -71,7 +71,7 @@ def scale(unit_cell, metadata, space_group_number, resolution_high):
     # hack in xdsstat (but don't cry if it fails)
 
     try:
-        xdsstat_output = run_job('xdsstat', [], ['XDS_ASCII.HKL'])
+        xdsstat_output = run_job('xdsstat_wrapper', [], ['XDS_ASCII.HKL'])
         open('xdsstat.log', 'w').write(''.join(xdsstat_output))
     except:
         pass
