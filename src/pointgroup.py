@@ -51,7 +51,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
     xmlout = 'pointless.xml'
 
     pointless_log = run_job(
-        'pointless',
+        'pointless_wrapper',
         arguments = ['xdsin', xdsin, 'xmlout', xmlout],
         stdin = ['systematicabsences off'])
 
