@@ -60,13 +60,13 @@ do
           " source $FAST_DP_ROOT/fast_dp.ini &&" \
           " PATH=$PATH && export PATH &&" \
           " LD_LIBRARY_PATH=$LD_LIBRARY_PATH && export LD_LIBRARY_PATH &&" \
-          " $amain && sync" &
+          " $amain && sync && remotesync $HOSTNAME" &
 #else
       echo "$itask" | ssh -x ${rhosts[$j]} \
           " cd $PWD &&" \
           " PATH=$PATH && export PATH &&" \
           " LD_LIBRARY_PATH=$LD_LIBRARY_PATH && export LD_LIBRARY_PATH &&" \
-          " $amain && sync" &
+          " $amain && sync && remotesync $HOSTNAME" &
 #endif
    else
       echo "$itask" | $amain && sync &  #submit all jobs to the peer node
