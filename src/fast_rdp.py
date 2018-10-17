@@ -186,7 +186,8 @@ class FastRDP:
         try:
             self._unit_cell, self._space_group, self._nref, beam_pixels = \
             scale(self._unit_cell, self._metadata, self._space_group_number, \
-                   self._resolution_high)
+                   self._resolution_high, self._resolution_low, self._n_jobs,
+                                self._n_cores)
             self._refined_beam = (self._metadata['pixel'][1] * beam_pixels[1],
                                   self._metadata['pixel'][0] * beam_pixels[0])
 

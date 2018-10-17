@@ -79,7 +79,7 @@ build/bin/eiger2cbf-so-worker:	eiger2cbf/plugin-worker.c \
 	eiger2cbf/bitshuffle/bshuf_h5filter.c \
 	eiger2cbf/bitshuffle/bshuf_h5plugin.c \
 	eiger2cbf/bitshuffle/bitshuffle.c
-	mkdir -p buid/bin
+	mkdir -p build/bin
 	${CC} ${CFLAGS} -o build/bin/eiger2cbf-so-worker \
 	-I${CBFINC} \
 	eiger2cbf/plugin-worker.c \
