@@ -134,11 +134,11 @@ class FastDP:
         return self._pa_host
 
     def set_plugin_library(self, plugin_library):
-        write('set_plugin_library %s' % plugin_library)
+        write('set_plugin_library {}'.format(plugin_library))
         self._plugin_library = plugin_library
 
     def set_h5toxds(self, h5toxds):
-        write('set_h5toxds %s' % h5toxds)
+        write('set_h5toxds {}'.format(h5toxds))
         self._h5toxds = h5toxds
         os.environ['H5TOXDS_PATH'] = h5toxds
 
@@ -250,7 +250,7 @@ class FastDP:
         try:
 
             hostname = os.environ['HOSTNAME'].split('.')[0]
-            write('Running on: %s' % hostname)
+            write('Running on: {}'.format(hostname))
 
         except Exception:
             pass
@@ -285,23 +285,23 @@ class FastDP:
                     n_jobs = self._max_n_jobs
             self.set_n_jobs(n_jobs)
 
-        write('Number of jobs: %d' % self._n_jobs)
-        write('Number of cores: %d' % self._n_cores)
+        write('Number of jobs: {}'.format(self._n_jobs))
+        write('Number of cores: {}'.format(self._n_cores))
 
         step_time = time.time()
 
-        write('Processing images: %d -> %d' % (self._metadata['start'],
-                                               self._metadata['end']))
+        write('Processing images: {} -> {}'.format((self._metadata['start'],
+                                               self._metadata['end'])))
 
         phi_end = self._metadata['phi_start'] + self._metadata['phi_width'] * \
                   (self._metadata['end'] - self._metadata['start'] + 1)
 
-        write('Phi range: %.2f -> %.2f' % (self._metadata['phi_start'],
-                                           phi_end))
+        write('Phi range: {:.2f} -> {:.2f}'.format((self._metadata['phi_start'],
+                                           phi_end)))
 
-        write('Template: %s' % self._metadata['template'])
-        write('Wavelength: %.5f' % self._metadata['wavelength'])
-        write('Working in: %s' % os.getcwd())
+        write('Template: {}'.format(self._metadata['template']))
+        write('Wavelength: {:.5f}'.format(self._metadata['wavelength']))
+        write('Working in: {}'.format(os.getcwd()))
 
 
         if self._plugin_library != " " and self._plugin_library != "None" and self._plugin_library != "none":
