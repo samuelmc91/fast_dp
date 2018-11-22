@@ -18,7 +18,7 @@ import traceback
 import shutil
 
 if not 'FAST_DP_ROOT' in os.environ:
-    raise RuntimeError, 'FAST_DP_ROOT not defined'
+    raise RuntimeError('FAST_DP_ROOT not defined')
 
 fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
 
@@ -128,7 +128,7 @@ class FastDP:
 
     def set_pa_host(self, pa_host):
         self._pa_host = pa_host
-        os.environ["FAST_DP_PA_HOST"]=pa_host
+        os.environ["FAST_DP_PA_HOST"] = pa_host
 
     def get_pa_host(self):
         return self._pa_host
@@ -163,7 +163,7 @@ class FastDP:
 
         # check input is image file
         if not os.path.isfile(start_image):
-            raise RuntimeError, 'no image provided: data collection cancelled?'
+            raise RuntimeError('no image provided: data collection cancelled?')
 
         check_file_readable(start_image)
 
@@ -275,7 +275,7 @@ class FastDP:
             phi = self._metadata['oscillation'][1]
 
             if phi == 0.0:
-                raise RuntimeError, 'grid scan data'
+                raise RuntimeError('grid scan data')
 
             wedge = max(10, int(round(5.0 / phi)))
             frames = self._metadata['end'] - self._metadata['start'] + 1
@@ -628,8 +628,8 @@ def main():
             fast_dp.set_last_image(last_image)
 
         if missing:
-            raise RuntimeError, 'images missing: %s' % \
-                ' '.join(map(str, missing))
+            raise RuntimeError('images missing: %s' % \
+                ' '.join(map(str, missing)))
 
         if options.resolution_low:
             fast_dp.set_resolution_low(float(options.resolution_low))
