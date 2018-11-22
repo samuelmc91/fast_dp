@@ -71,8 +71,8 @@ class FastDP:
         self._n_cores = 0
         self._max_n_jobs = 0
         self._n_cpus = get_number_cpus()
-        self._plugin_library=" "
-        self._h5toxds=" "
+        self._plugin_library = " "
+        self._h5toxds = " "
         self._execution_hosts = []
 
         # image ranges
@@ -117,11 +117,11 @@ class FastDP:
         # add this to the metadata as "extra text"
         et = self._metadata.get('extra_text', '')
         if et == None:
-            self._metadata['extra_text'] = 'CLUSTER_NODES=%s\n' % \
-            ' '.join(execution_hosts)
+            self._metadata['extra_text'] = \
+            'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
         else:
-            self._metadata['extra_text'] = et + 'CLUSTER_NODES=%s\n' % \
-            ' '.join(execution_hosts)
+            self._metadata['extra_text'] = \
+            et + 'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
 
     def get_execution_hosts(self):
         return self._execution_hosts
