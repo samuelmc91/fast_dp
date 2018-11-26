@@ -22,7 +22,7 @@ def anomalous_signals(hklin):
         data = ma
 
     if not data:
-        raise RuntimeError, 'no data found'
+        raise RuntimeError('no data found')
 
     df_f = data.anomalous_signal()
     differences = data.anomalous_differences()
@@ -57,7 +57,7 @@ def merge(hklout='fast_dp.mtz', aimless_log='aimless.log'):
 
     for record in log:
         if '!!!! No data !!!!' in record:
-            raise RuntimeError, 'aimless complains no data'
+            raise RuntimeError('aimless complains no data')
 
 
     return parse_aimless_log(log)
@@ -145,21 +145,21 @@ def parse_aimless_log(log):
 
     write(80 * '-')
 
-    write('%20s ' % 'Low resolution'     + '%6.2f %6.2f %6.2f' % lres)
-    write('%20s ' % 'High resolution'    + '%6.2f %6.2f %6.2f' % hres)
-    write('%20s ' % 'Rmerge'             + '%6.3f %6.3f %6.3f' % rmerge)
-    write('%20s ' % 'I/sigma'            + '%6.2f %6.2f %6.2f' % isigma)
-    write('%20s ' % 'Completeness'       + '%6.1f %6.1f %6.1f' % comp)
-    write('%20s ' % 'Multiplicity'       + '%6.1f %6.1f %6.1f' % mult)
-    write('%20s ' % 'CC 1/2'             + '%6.3f %6.3f %6.3f' % cchalf)
-    write('%20s ' % 'Anom. Completeness' + '%6.1f %6.1f %6.1f' % acomp)
-    write('%20s ' % 'Anom. Multiplicity' + '%6.1f %6.1f %6.1f' % amult)
-    write('%20s ' % 'Anom. Correlation'  + '%6.3f %6.3f %6.3f' % ccanom)
-    write('%20s ' % 'Nrefl'              + '%6d %6d %6d' % nref)
-    write('%20s ' % 'Nunique'            + '%6d %6d %6d' % nuniq)
-    write('%20s ' % 'Mid-slope'          + '%6.3f' % slope)
-    write('%20s ' % 'dF/F'               + '%6.3f' % df_f)
-    write('%20s ' % 'dI/sig(dI)'         + '%6.3f' % di_sigdi)
+    write('{:20s} '.format('Low resolution')    + '{:6.2f} {:6.2f} {:6.2f}'.format(lres))
+    write('{:20s} '.format('High resolution')   + '{:6.2f} {:6.2f} {:6.2f}'.format(hres))
+    write('{:20s} '.format('Rmerge')            + '{:6.3f} {:6.3f} {:6.3f}'.format(rmerge))
+    write('{:20s} '.format('I/sigma')           + '{:6.2f} {:6.2f} {:6.2f}'.format(isigma))
+    write('{:20s} '.format('Completeness')      + '{:6.1f} {:6.1f} {:6.1f}'.format(comp))
+    write('{:20s} '.format('Multiplicity')      + '{:6.1f} {:6.1f} {:6.1f}'.format(mult))
+    write('{:20s} '.format('CC 1/2')            + '{:6.3f} {:6.3f} {:6.3f}'.format(cchalf))
+    write('{:20s} '.format('Anom. Completeness')+ '{:6.1f} {:6.1f} {:6.1f}'.format(acomp))
+    write('{:20s} '.format('Anom. Multiplicity')+ '{:6.1f} {:6.1f} {:6.1f}'.format(amult))
+    write('{:20s} '.format('Anom. Correlation') + '{:6.3f} {:6.3f} {:6.3f}'.format(ccanom))
+    write('{:20s} '.format('Nrefl')             + '{:6d} {:6d} {:6d}'.format(nref))
+    write('{:20s} '.format('Nunique')           + '{:6d} {:6d} {:6d}'.format(nuniq))
+    write('{:20s} '.format('Mid-slope')         + '{:6.3f}'.format(slope))
+    write('{:20s} '.format('dF/F')              + '{:6.3f}'.format(df_f))
+    write('{:20s} '.format('dI/sig(dI)')        + '{:6.3f}'.format(di_sigdi))
 
     write(80 * '-')
 
