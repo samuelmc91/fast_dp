@@ -21,7 +21,7 @@ def ersatz_pointgroup(spacegroup_name):
             pg = record.split()[4][2:]
 
     if not pg:
-        raise RuntimeError, 'spacegroup %s unknown' % spacegroup_name
+        raise RuntimeError('spacegroup {} unknown').format(spacegroup_name)
 
     # FIXME this is probably not correct for small molecule work...
     # just be aware of this, in no danger right now of handling non-chiral
@@ -75,7 +75,7 @@ def spacegroup_to_lattice(input_spacegroup):
                 return fix_hH(mapping[record.split()[5]] + record.split()[3][0])
 
     else:
-        raise RuntimeError, 'bad type for input: %s' % type(input_spacegroup)
+        raise RuntimeError('bad type for input: {}'.format(type(input_spacegroup)))
 
     return None
 
@@ -86,11 +86,11 @@ def check_spacegroup_name(spacegroup_name):
     try:
         j = int(spacegroup_name)
         if j > 230 or j <= 0:
-            raise RuntimeError, 'spacegroup number nonsense: %s' \
-                  % spacegroup_name
+            raise RuntimeError('spacegroup number nonsense: {}').format(
+                  spacegroup_name)
         return spacegroup_number_to_name(j)
 
-    except ValueError, e:
+    except ValueError as e:
         pass
 
     found_spacegroup = None
@@ -102,7 +102,7 @@ def check_spacegroup_name(spacegroup_name):
         if spacegroup_name == record.split()[3]:
             return spacegroup_name
 
-    raise RuntimeError, 'spacegroup name "%s" not recognised' % spacegroup_name
+    raise RuntimeError('spacegroup name "{}" not recognised'.format(spacegroup_name))
 
 def check_split_cell(cell_string):
     '''Will return tuple of floats a, b, c, alpha, beta, gamma from input
@@ -112,8 +112,8 @@ def check_split_cell(cell_string):
     ideal_string = 'a,b,c,alpha,beta,gamma'
 
     if not cell_string.count(',') == 5:
-        raise RuntimeError, '%s should be of the form %s' % \
-              (cell_string, ideal_string)
+        raise RuntimeError('{} should be of the form {}').format(
+              (cell_string, ideal_string))
 
     a, b, c, alpha, beta, gamma = tuple(
         map(float, cell_string.split(',')))
@@ -141,7 +141,7 @@ def constrain_cell(lattice_class, cell):
         e = (a + b + c) / 3.0
         return (e, e, e, 90.0, 90.0, 90.0)
 
-    raise RuntimeError, 'lattice class not recognised: %s' % lattice_class
+    raise RuntimeError('lattice class not recognised: {}').format(lattice_class)
 
 def spacegroup_number_to_name(spg_num):
     '''Convert a spacegroup number to a more readable name.'''
