@@ -37,7 +37,7 @@ def scale(unit_cell, metadata, space_group_number, resolution_high,
     # once again should check on the general happiness of everything...
 
     for step in ['CORRECT']:
-        lastrecord = open('%s.LP' % step).readlines()[-1]
+        lastrecord = open('{}.LP'.format(step)).readlines()[-1]
         if '!!! ERROR !!!' in lastrecord:
             raise RuntimeError('error in {}: {}').format((step, lastrecord.replace('!!! ERROR !!!', '').strip()))
 
