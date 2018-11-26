@@ -12,10 +12,10 @@ def check_file_readable(filename):
     only if everything is OK.'''
 
     if not os.path.exists(filename):
-        raise RuntimeError, 'file %s not found' % filename
+        raise RuntimeError('file {} not found').format(filename)
 
     if not os.access(filename, os.R_OK):
-        raise RuntimeError, 'file %s not readable' % filename
+        raise RuntimeError('file {} not readable').format(filename)
 
     return
 
@@ -38,14 +38,14 @@ def find_hdf5_lib():
   for d in os.environ['PATH'].split(os.pathsep):
     if os.path.isfile(os.path.join(d, 'eiger2cbf-so-worker')):
        if os.path.isfile(os.path.join(d, 'eiger2cbf.so')):
-          __eiger_lib ='LIB=%s\n' % os.path.join(d,'eiger2cbf.so')
+          __eiger_lib ='LIB={}\n'.format(os.path.join(d,'eiger2cbf.so'))
           return __eiger_lib
        elif  os.path.isfile(os.path.join(d, '..','lib','eiger2cbf.so')):
-          __eiger_lib ='LIB=%s\n' % os.path.join(d,'..','lib','eiger2cbf.so')
+          __eiger_lib ='LIB={}\n'.format(os.path.join(d,'..','lib','eiger2cbf.so'))
           return __eiger_lib
   for d in os.environ['PATH'].split(os.pathsep):
     if os.path.isfile(os.path.join(d, 'xds_par')):
-      __hdf5_lib = 'LIB=%s\n' % os.path.join(d,'dectris-neggia.so')
+      __hdf5_lib = 'LIB={}\n'.format(os.path.join(d,'dectris-neggia.so'))
       return __hdf5_lib
   return ''
 
@@ -74,12 +74,12 @@ def is_gzip(filename):
 def open_file(filename, mode='rb', url=False):
   if is_bz2(filename):
     if bz2 is None:
-      raise RuntimeError, 'bz2 file provided without bz2 module'
+      raise RuntimeError('bz2 file provided without bz2 module')
     fh_func = lambda: bz2.BZ2File(filename, mode)
 
   elif is_gzip(filename):
     if gzip is None:
-      raise RuntimeError, 'gz file provided without gzip module'
+      raise RuntimeError('gz file provided without gzip module')
     fh_func = lambda: gzip.GzipFile(filename, mode)
 
   else:
@@ -95,7 +95,7 @@ def failover_hdf5(hdf5_file):
     db = DataBlockFactory.from_filenames([hdf5_file])[0]
     sweep = db.extract_sweeps()[0]
     t1 = time.time()
-    write('Reading %s took %.2fs' % (hdf5_file, t1-t0))
+    write('Reading {} took {:.2f}s'.format(hdf5_file, t1-t0))
     d = sweep.get_detector()
     s = sweep.get_scan()
     g = sweep.get_goniometer()
@@ -357,7 +357,7 @@ def read_image_metadata(image):
 
             # handle I24 @ DLS vertical goniometer from 2015/1/1
             if metadata['goniometer_is_vertical']:
-                metadata['detector'] = '%sV' % metadata['detector']
+                metadata['detector'] = '{}V'.format(metadata['detector'])
 
             metadata['directory'] = directory
             metadata['template'] = template
@@ -368,7 +368,7 @@ def read_image_metadata(image):
 
             return metadata
 
-    except ValueError, e:
+    except ValueError as e:
         pass
 
     # MAR CCD images record the beam centre in pixels...
@@ -434,8 +434,8 @@ def read_image_metadata(image):
             elif detector == 'RIGAKU':
                 metadata['detector'] = 'RIGAKU'
             else:
-                raise RuntimeError, 'detector %s not yet supported' % \
-                      detector
+                raise RuntimeError, 'detector {} not yet supported'.format(
+                      detector)
 
     if (metadata['detector'] == 'PILATUS_6M') and \
        (metadata['size'] == (1679, 1475)):
