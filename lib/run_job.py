@@ -8,9 +8,9 @@ def run_job(executable, arguments = [], stdin = [], working_directory = None):
     if working_directory is None:
         working_directory = os.getcwd()
 
-    command_line = '%s' % executable
+    command_line = '{}'.format(executable)
     for arg in arguments:
-        command_line += ' "%s"' % arg
+        command_line += ' "{}"'.format(arg)
 
     popen = subprocess.Popen(command_line,
                              bufsize = 1,
@@ -22,7 +22,7 @@ def run_job(executable, arguments = [], stdin = [], working_directory = None):
                              shell = True)
 
     for record in stdin:
-        popen.stdin.write('%s\n' % record)
+        popen.stdin.write('{}\n'.format(record))
 
     popen.stdin.close()
 

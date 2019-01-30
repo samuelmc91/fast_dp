@@ -47,15 +47,15 @@ class _writer:
     def write(self, record):
         if not self._fout:
             self._fout = open(self._filename, 'w')
-        self._fout.write('%s\n' % record)
+        self._fout.write('{}\n'.format(record))
         print record
         if self._afilename:
             try:
                 if not self._afout:
                     self._afout = open(self._afilename, 'w')
-                self._afout.write('%s\n' % record)
+                self._afout.write('{}\n'.format(record))
             except:
-                print self._afilename+' not available for writing'
+                print self._afilename + ' not available for writing'
                 self._afilename = None
         return
 

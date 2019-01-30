@@ -36,7 +36,7 @@ Options:
   -J MAXIMUM_NUMBER_OF_JOBS, --maximum-number-of-jobs=MAXIMUM_NUMBER_OF_JOBS
                         Maximum number of jobs for integration
   -k NUMBER_OF_CORES, --number-of-cores=NUMBER_OF_CORES
-                        Number of cores (theads) for integration
+                        Number of cores (threads) for integration
   -l PLUGIN_LIBRARY, --lib=PLUGIN_LIBRARY
                         image reader plugin path, ending with .so
   -e CLUSTER_NODES, -n CLUSTER_NODES, --execution-hosts=CLUSTER_NODES, --cluster-nodes=CLUSTER_NODES
@@ -132,7 +132,7 @@ fast_dp depends on:
 
 If all of these are installed and configured no further work is needed. For
 parallel operation in integration a forkintegrate script is needed to send
-jobs to your queuing system.
+jobs to your queueing system.
 
 2. Installation
 
@@ -167,7 +167,7 @@ asked to provide example data in the event of a bug report.
 fast_dp was developed at Diamond Light Source with the specific purpose of
 providing feedback to users about the merging statistics of their data in the
 shortest possible time. Clearly, however, it is very much dependent on XDS
-and it's intrinsic parallelisation as well as CCP4 and CCTBX to operate, and
+and its intrinsic parallelisation as well as CCP4 and CCTBX to operate, and
 without these fast_dp could not exist.
 
 6. License

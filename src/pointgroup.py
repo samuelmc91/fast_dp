@@ -80,15 +80,15 @@ def decide_pointgroup(p1_unit_cell, metadata,
                    ersatz_pointgroup(result_sg) == pointgroup :
                 space_group_number = r[1]
                 unit_cell = results[lattice_to_spacegroup(r[0])][1]
-                write('Happy with sg# %d' % space_group_number)
-                write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' %
-                      unit_cell)
+                write('Happy with sg# {}'.format(space_group_number))
+                write('{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(
+                      unit_cell))
                 sg_accepted = True
                 break
 
         if not sg_accepted:
-            write('No indexing solution for spacegroup %s so ignoring' % \
-                  input_spacegroup)
+            write('No indexing solution for spacegroup {} so ignoring'.format(
+                  input_spacegroup))
             input_spacegroup = None
 
     # if input space group obviously nonsense, allow to ignore just warn
@@ -97,13 +97,12 @@ def decide_pointgroup(p1_unit_cell, metadata,
             if lattice_to_spacegroup(r[0]) in results:
                 space_group_number = r[1]
                 unit_cell = results[lattice_to_spacegroup(r[0])][1]
-                write('Happy with sg# %d' % space_group_number)
-                write('%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' %
-                      unit_cell)
-
+                write('Happy with sg# {}'.format(space_group_number))
+                write('{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(
+                      unit_cell))
                 break
             else:
-                write('Rejected solution %s %3d' % r)
+                write('Rejected solution {} {:3d}'.format(r))
 
     # this should probably be a proper check...
     assert(space_group_number)

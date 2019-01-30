@@ -1,7 +1,7 @@
 import os
 
 if not 'FAST_DP_ROOT' in os.environ:
-    raise RuntimeError, 'FAST_DP_ROOT undefined'
+    raise RuntimeError('FAST_DP_ROOT undefined')
 
 from run_job import get_number_cpus
 
@@ -19,11 +19,11 @@ def write_xds_inp_autoindex(metadata, xds_inp):
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',
-                            '%s_INDEX.INP' % metadata['detector'])
+                            '{}_INDEX.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError, 'template for %s not found at %s' % \
-              (metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}').format(
+              (metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 
@@ -31,7 +31,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
 
     friedels_law = 'FALSE'
 
-    fout.write('%s\n' % template_str.format(
+    fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         nx = metadata['size'][0],
@@ -48,21 +48,21 @@ def write_xds_inp_autoindex(metadata, xds_inp):
         template = os.path.join(metadata['directory'],
                                 metadata['template'].replace('#', '?')),
         starting_angle = metadata['oscillation'][0],
-        starting_image = metadata['start']))
+        starting_image = metadata['start'])))
 
     # then we get the non-template stuff
 
-    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
-                                       metadata['end']))
+    fout.write('DATA_RANGE={} {}\n'.format((metadata['start'],
+                                       metadata['end'])))
 
     # compute the background range as min(all, 5) #TODO maybe 5 degrees?
 
     if metadata['end'] - metadata['start'] > 5:
-        fout.write('BACKGROUND_RANGE=%d %d\n' % \
-                   (metadata['start'], metadata['start'] + 5))
+        fout.write('BACKGROUND_RANGE={} {}\n'.format(
+                   (metadata['start'], metadata['start'] + 5)))
     else:
-        fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
-                                                 metadata['end']))
+        fout.write('BACKGROUND_RANGE={} {}\n'.format((metadata['start'],
+                                                 metadata['end'])))
 
     # REFINE(IDXREF)=
     fout.write('REFINE(IDXREF)=CELL AXIS ORIENTATION POSITION BEAM\n')
@@ -76,7 +76,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     wedge_size = int(round(5.0  / metadata['oscillation'][1])) - 1
 
     wedge = (images[0], images[0] + wedge_size)
-    fout.write('SPOT_RANGE=%d %d\n' % wedge)
+    fout.write('SPOT_RANGE={} {}\n'.format(wedge))
 
     # if we have more than 90 degrees of data, use wedges at the start,
     # 45 degrees in and 90 degrees in, else use a wedge at the start,
@@ -85,23 +85,23 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     # if less than 15 degrees of data, use all of the images
 
     if (metadata['end'] - metadata['start']) * metadata['oscillation'][1] < 15:
-        fout.write('SPOT_RANGE=%d %d\n' % (metadata['start'],
-                                           metadata['end']))
+        fout.write('SPOT_RANGE={} {}\n'.format((metadata['start'],
+                                           metadata['end'])))
 
     elif int(90.0 / metadata['oscillation'][1]) + wedge_size in images:
         wedge = (int(45.0 / metadata['oscillation'][1]),
                  int(45.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
         wedge = (int(90.0 / metadata['oscillation'][1]),
                  int(90.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
 
     else:
         mid = (len(images) / 2) - wedge_size + images[0] - 1
         wedge = (mid, mid + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
         wedge = (images[-wedge_size], images[-1])
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
 
     fout.close()
 
@@ -113,11 +113,11 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',
-                            '%s_INDEX.INP' % metadata['detector'])
+                            '{}_INDEX.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError, 'template for %s not found at %s' % \
-              (metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}').format(
+              (metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 
@@ -125,7 +125,7 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
 
     friedels_law = 'FALSE'
 
-    fout.write('%s\n' % template_str.format(
+    fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         nx = metadata['size'][0],
@@ -142,7 +142,7 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
         template = os.path.join(metadata['directory'],
                                 metadata['template'].replace('#', '?')),
         starting_angle = metadata['oscillation'][0],
-        starting_image = metadata['start']))
+        starting_image = metadata['start'])))
 
     # cell, spacegroup
 
@@ -253,8 +253,8 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
 
     # then we get the non-template stuff
 
-    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
-                                       metadata['end']))
+    fout.write('DATA_RANGE={} {}\n'.format((metadata['start'],
+                                       metadata['end'])))
 
     fout.close()
 
@@ -271,11 +271,11 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number, \
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',
-                            '%s_REDO.INP' % metadata['detector'])
+                            '{}_REDO.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError, 'template for %s not found at %s' % \
-              (metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}').format(
+              (metadata['detector'], template))
 
     template_fin = open(template, 'r')
 
@@ -294,7 +294,7 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number, \
     if no_processors == 0:
         no_processors = get_number_cpus()
 
-    fout.write('%s\n' % template_str.format(
+    fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = no_processors,
         no_jobs = no_jobs,
@@ -322,22 +322,22 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number, \
         template = os.path.join(metadata['directory'],
                                 metadata['template'].replace('#', '?')),
         starting_angle = metadata['oscillation'][0],
-        starting_image = metadata['start']))
+        starting_image = metadata['start'])))
 
 
     # then we get the non-template stuff
 
-    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
-                                       metadata['end']))
+    fout.write('DATA_RANGE={} {}\n'.format((metadata['start'],
+                                       metadata['end'])))
 
     # compute the background range as min(all, 5)
 
     if metadata['end'] - metadata['start'] > 5:
-        fout.write('BACKGROUND_RANGE=%d %d\n' % \
-                   (metadata['start'], metadata['start'] + 5))
+        fout.write('BACKGROUND_RANGE={} {}\n'.format(
+                   (metadata['start'], metadata['start'] + 5)))
     else:
-        fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
-                                                 metadata['end']))
+        fout.write('BACKGROUND_RANGE={} {}\n'.format((metadata['start'],
+                                                 metadata['end'])))
 
     # by default autoindex off all images - can make this better later on.
     # Ok: I think it is too slow already. Three wedges, as per xia2...
@@ -348,7 +348,7 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number, \
     wedge_size = int(round(5.0  / metadata['oscillation'][1])) - 1
 
     wedge = (images[0], images[0] + wedge_size)
-    fout.write('SPOT_RANGE=%d %d\n' % wedge)
+    fout.write('SPOT_RANGE={} {}\n'.format(wedge))
 
     # if we have more than 90 degrees of data, use wedges at the start,
     # 45 degrees in and 90 degrees in, else use a wedge at the start,
@@ -357,23 +357,23 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number, \
     # if less than 15 degrees of data, use all of the images
 
     if (metadata['end'] - metadata['start']) * metadata['oscillation'][1] < 15:
-        fout.write('SPOT_RANGE=%d %d\n' % (metadata['start'],
-                                           metadata['end']))
+        fout.write('SPOT_RANGE={} {}\n'.format((metadata['start'],
+                                           metadata['end'])))
 
     elif int(90.0 / metadata['oscillation'][1]) + wedge_size in images:
         wedge = (int(45.0 / metadata['oscillation'][1]),
                  int(45.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
         wedge = (int(90.0 / metadata['oscillation'][1]),
                  int(90.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
 
     else:
         mid = (len(images) / 2) - wedge_size + images[0] - 1
         wedge = (mid, mid + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
         wedge = (images[-5], images[-1])
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
     fout.close()
 
     return
@@ -391,11 +391,11 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',
-                            '%s_CORRECT.INP' % metadata['detector'])
+                            '{}_CORRECT.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError, 'template for %s not found at %s' % \
-              (metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}').format(
+              (metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 
@@ -411,7 +411,7 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
     else:
         corrections = '!'
 
-    fout.write('%s\n' % template_str.format(
+    fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         resolution_low = resolution_low,
@@ -438,7 +438,7 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
         template = os.path.join(metadata['directory'],
                                 metadata['template'].replace('#', '?')),
         starting_angle = metadata['oscillation'][0],
-        starting_image = metadata['start']))
+        starting_image = metadata['start'])))
 
     # then we get the non-template stuff
 
@@ -448,9 +448,9 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
         start, end = metadata['start'], metadata['end']
         if (end - start + 1) * width > 360:
             end = start + (360. / width) - 1
-        fout.write('DATA_RANGE=%d %d\n' % (start, end))
+        fout.write('DATA_RANGE={} {}\n'.format((start, end)))
     else:
-        fout.write('DATA_RANGE=%d %d\n' % (metadata['start'], metadata['end']))
+        fout.write('DATA_RANGE={} {}\n'.format((metadata['start'], metadata['end'])))
 
     fout.close()
 
@@ -464,15 +464,15 @@ def write_xds_inp_correct_no_cell(metadata,
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',
-                            '%s_CORRECT.INP' % metadata['detector'])
+                            '{}_CORRECT.INP'.format(metadata['detector']))
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',
-                            '%s_CORRECT_NO_CELL.INP' % metadata['detector'])
+                            '{}_CORRECT_NO_CELL.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError, 'template for %s not found at %s' % \
-              (metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}').format(
+              (metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 
@@ -485,7 +485,7 @@ def write_xds_inp_correct_no_cell(metadata,
     else:
         corrections = '!'
 
-    fout.write('%s\n' % template_str.format(
+    fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),
         resolution_low = resolution_low,
@@ -505,12 +505,12 @@ def write_xds_inp_correct_no_cell(metadata,
         template = os.path.join(metadata['directory'],
                                 metadata['template'].replace('#', '?')),
         starting_angle = metadata['oscillation'][0],
-        starting_image = metadata['start']))
+        starting_image = metadata['start'])))
 
     # then we get the non-template stuff
 
-    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
-                                       metadata['end']))
+    fout.write('DATA_RANGE={} {}\n'.format((metadata['start'],
+                                       metadata['end'])))
 
     fout.close()
 
