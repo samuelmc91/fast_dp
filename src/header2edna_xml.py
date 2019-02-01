@@ -101,5 +101,5 @@ if __name__ == '__main__':
 
     xml = header2edna_xml(sys.argv[1], minosc, mintime)
 
-    print xml
+    print(xml)
     # .replace('><', '>\n<')
