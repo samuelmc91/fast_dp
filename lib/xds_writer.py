@@ -159,10 +159,10 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
 
     if metadata['end'] - metadata['start'] > 5:
         fout.write('BACKGROUND_RANGE={0} {1}\n'.format( 
-                   metadata['start'], metadata['start'] + 5)
+                   metadata['start'], metadata['start'] + 5) )
     else:
-        fout.write('BACKGROUND_RANGE={0} {1}\n'.format(metadata['start'],
-                                                 metadata['end'])
+        fout.write('BACKGROUND_RANGE={0} {1}\n'.format(
+                   metadata['start'], metadata['end']) )
 
     # by default autoindex off all images - can make this better later on.
     # Ok: I think it is too slow already. Three wedges, as per xia2...
