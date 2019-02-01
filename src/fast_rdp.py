@@ -12,7 +12,7 @@ import copy
 import traceback
 
 if not 'FAST_DP_ROOT' in os.environ:
-    raise RuntimeError, 'FAST_DP_ROOT not defined'
+    raise RuntimeError('FAST_DP_ROOT not defined')
 
 fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
 
@@ -105,15 +105,12 @@ class FastRDP:
         pointgroup, scale and merge.'''
 
         try:
-
             hostname = os.environ['HOSTNAME'].split('.')[0]
-            write('Running on: %s' % hostname)
-
+            write('Running on: {}'.format(hostname))
         except Exception:
             pass
 
         # check input frame limits
-
         if not self._first_image is None:
             if self._metadata['start'] < self._first_image:
                 start = self._metadata['start']
@@ -127,18 +124,18 @@ class FastRDP:
 
         step_time = time.time()
 
-        write('Processing images: %d -> %d' % (self._metadata['start'],
-                                               self._metadata['end']))
+        write('Processing images: {} -> {}'.format((self._metadata['start'],
+                                               self._metadata['end'])))
 
         phi_end = self._metadata['phi_start'] + self._metadata['phi_width'] * \
                   (self._metadata['end'] - self._metadata['start'] + 1)
 
-        write('Phi range: %.2f -> %.2f' % (self._metadata['phi_start'],
-                                           phi_end))
+        write('Phi range: {:.2f} -> {:.2f}'.format((self._metadata['phi_start'],
+                                           phi_end)))
 
-        write('Template: %s' % self._metadata['template'])
-        write('Wavelength: %.5f' % self._metadata['wavelength'])
-        write('Working in: %s' % os.getcwd())
+        write('Template: {}'.format(self._metadata['template']))
+        write('Wavelength: {:.5f}'.format(self._metadata['wavelength']))
+        write('Working in: {}'.format(os.getcwd()))
 
         # just for information for the user, print all options for indexing
         # FIXME should be able to run the same from CORRECT.LP which would
@@ -180,7 +177,7 @@ class FastRDP:
                 self._resolution_high = resol
 
         except RuntimeError as e:
-            write('Pointgroup error: %s' % e)
+            write('Pointgroup error: {}'.format(e))
             return
 
         try:
@@ -192,7 +189,7 @@ class FastRDP:
                                   self._metadata['pixel'][0] * beam_pixels[0])
 
         except RuntimeError as e:
-            write('Scaling error: %s' % e)
+            write('Scaling error: {}'.format(e))
             return
 
         try:
@@ -200,18 +197,18 @@ class FastRDP:
             self._xml_results = merge(hklout='fast_rdp.mtz',
                                       aimless_log='aimless_rerun.log')
         except RuntimeError as e:
-            write('Merging error: %s' % e)
+            write('Merging error: {}'.format(e))
             return
 
-        write('Merging point group: %s' % self._space_group)
-        write('Unit cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-              self._unit_cell)
+        write('Merging point group: {}'.format(self._space_group))
+        write('Unit cell: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(
+              self._unit_cell))
 
         duration = time.time() - step_time
-        write('Reprocessing took %s (%d s) [%d reflections]' %
+        write('Reprocessing took {} ({} s) [{} reflections]'.format(
               (time.strftime('%Hh %Mm %Ss',
                              time.gmtime(duration)), duration,
-               self._nref))
+               self._nref)))
 
         # write out json and xml
         for func, filename in [ (output.write_json, 'fast_rdp.json'),
@@ -260,7 +257,7 @@ def main():
 
     if len(args) == 1:
         if not os.path.isdir(args[0]):
-            raise RuntimeError, 'in this mode, provide /path/to/fast_dp/dir'
+            raise RuntimeError('in this mode, provide /path/to/fast_dp/dir')
         from_dir = args[0]
         for filename in os.listdir(from_dir):
             if os.path.isdir(os.path.join(from_dir, filename)):
@@ -274,10 +271,10 @@ def main():
     try:
         fast_rdp = FastRDP()
         fast_rdp._commandline = commandline
-        write('Fast_RDP installed in: %s' % os.environ['FAST_DP_ROOT'])
-        write('Working in: %s' % os.getcwd())
+        write('Fast_RDP installed in: {}'.format(os.environ['FAST_DP_ROOT']))
+        write('Working in: {}'.format(os.getcwd()))
         if from_dir:
-            write('Working from: %s' % from_dir)
+            write('Working from: {}'.format(from_dir))
 
         if options.atom:
             fast_rdp.set_atom(options.atom)
@@ -303,22 +300,22 @@ def main():
             try:
                 spacegroup = check_spacegroup_name(options.spacegroup)
                 fast_rdp.set_input_spacegroup(spacegroup)
-                write('Set spacegroup: %s' % spacegroup)
+                write('Set spacegroup: {}'.format(spacegroup))
             except RuntimeError as e:
-                write('Spacegroup %s not recognised: ignoring' % \
-                      options.spacegroup)
+                write('Spacegroup {} not recognised: ignoring'.format(
+                      options.spacegroup))
 
         if options.cell:
             assert(options.spacegroup)
             cell = check_split_cell(options.cell)
-            write('Set cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
+            write('Set cell: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}'.format(cell))
             fast_rdp.set_input_cell(cell)
 
         fast_rdp.reprocess()
 
     except Exception as e:
         traceback.print_exc(file = open('fast_rdp.error', 'w'))
-        write('Fast RDP error: %s' % str(e))
+        write('Fast RDP error: {}'.format(str(e)))
 
 if __name__ == '__main__':
     main()

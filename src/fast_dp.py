@@ -18,7 +18,7 @@ import traceback
 import shutil
 
 if not 'FAST_DP_ROOT' in os.environ:
-    raise RuntimeError, 'FAST_DP_ROOT not defined'
+    raise RuntimeError('FAST_DP_ROOT not defined')
 
 fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
 
@@ -71,8 +71,8 @@ class FastDP:
         self._n_cores = 0
         self._max_n_jobs = 0
         self._n_cpus = get_number_cpus()
-        self._plugin_library=" "
-        self._h5toxds=" "
+        self._plugin_library = " "
+        self._h5toxds = " "
         self._execution_hosts = []
 
         # image ranges
@@ -117,28 +117,28 @@ class FastDP:
         # add this to the metadata as "extra text"
         et = self._metadata.get('extra_text', '')
         if et == None:
-            self._metadata['extra_text'] = 'CLUSTER_NODES=%s\n' % \
-            ' '.join(execution_hosts)
+            self._metadata['extra_text'] = \
+            'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
         else:
-            self._metadata['extra_text'] = et + 'CLUSTER_NODES=%s\n' % \
-            ' '.join(execution_hosts)
+            self._metadata['extra_text'] = \
+            et + 'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
 
     def get_execution_hosts(self):
         return self._execution_hosts
 
     def set_pa_host(self, pa_host):
         self._pa_host = pa_host
-        os.environ["FAST_DP_PA_HOST"]=pa_host
+        os.environ["FAST_DP_PA_HOST"] = pa_host
 
     def get_pa_host(self):
         return self._pa_host
 
     def set_plugin_library(self, plugin_library):
-        write('set_plugin_library %s' % plugin_library)
+        write('set_plugin_library {}'.format(plugin_library))
         self._plugin_library = plugin_library
 
     def set_h5toxds(self, h5toxds):
-        write('set_h5toxds %s' % h5toxds)
+        write('set_h5toxds {}'.format(h5toxds))
         self._h5toxds = h5toxds
         os.environ['H5TOXDS_PATH'] = h5toxds
 
@@ -163,7 +163,7 @@ class FastDP:
 
         # check input is image file
         if not os.path.isfile(start_image):
-            raise RuntimeError, 'no image provided: data collection cancelled?'
+            raise RuntimeError('no image provided: data collection cancelled?')
 
         check_file_readable(start_image)
 
@@ -250,7 +250,7 @@ class FastDP:
         try:
 
             hostname = os.environ['HOSTNAME'].split('.')[0]
-            write('Running on: %s' % hostname)
+            write('Running on: {}'.format(hostname))
 
         except Exception:
             pass
@@ -275,7 +275,7 @@ class FastDP:
             phi = self._metadata['oscillation'][1]
 
             if phi == 0.0:
-                raise RuntimeError, 'grid scan data'
+                raise RuntimeError('grid scan data')
 
             wedge = max(10, int(round(5.0 / phi)))
             frames = self._metadata['end'] - self._metadata['start'] + 1
@@ -285,23 +285,23 @@ class FastDP:
                     n_jobs = self._max_n_jobs
             self.set_n_jobs(n_jobs)
 
-        write('Number of jobs: %d' % self._n_jobs)
-        write('Number of cores: %d' % self._n_cores)
+        write('Number of jobs: {}'.format(self._n_jobs))
+        write('Number of cores: {}'.format(self._n_cores))
 
         step_time = time.time()
 
-        write('Processing images: %d -> %d' % (self._metadata['start'],
-                                               self._metadata['end']))
+        write('Processing images: {} -> {}'.format((self._metadata['start'],
+                                               self._metadata['end'])))
 
         phi_end = self._metadata['phi_start'] + self._metadata['phi_width'] * \
                   (self._metadata['end'] - self._metadata['start'] + 1)
 
-        write('Phi range: %.2f -> %.2f' % (self._metadata['phi_start'],
-                                           phi_end))
+        write('Phi range: {:.2f} -> {:.2f}'.format((self._metadata['phi_start'],
+                                           phi_end)))
 
-        write('Template: %s' % self._metadata['template'])
-        write('Wavelength: %.5f' % self._metadata['wavelength'])
-        write('Working in: %s' % os.getcwd())
+        write('Template: {}'.format(self._metadata['template']))
+        write('Wavelength: {:.5f}'.format(self._metadata['wavelength']))
+        write('Working in: {}'.format(os.getcwd()))
 
 
         if self._plugin_library != " " and self._plugin_library != "None" and self._plugin_library != "none":
@@ -328,40 +328,40 @@ class FastDP:
                         et = et+line+"\n"
             self._metadata['extra_text'] = et
  
-        write('Extra commands: %s' % self._metadata['extra_text'])
+        write('Extra commands: {}'.format(self._metadata['extra_text']))
 
         try:
             self._p1_unit_cell = autoindex(self._metadata,
                                            input_cell = self._input_cell_p1)
         except Exception as e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
-            write('Autoindexing error: %s' % e)
+            write('Autoindexing error: {}'.format(e))
             fdpelogpath = get_afilepath()
             fdpelogprefix = get_afileprefix()
             if fdpelogpath:
                 try:
                     shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
-                    write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+                    write('Archived fast_dp.error to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))) 
                 except:
-                    write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+                    write('fast_dp.error not archived to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
             return
 
         try:
             mosaics = integrate(self._metadata, self._p1_unit_cell,
                                 self._resolution_low, self._n_jobs,
                                 self._n_cores)
-            write('Mosaic spread: %.2f < %.2f < %.2f' % tuple(mosaics))
+            write('Mosaic spread: {:.2f} < {:.2f} < {:.2f}'.format(tuple(mosaics)))
         except RuntimeError as e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
-            write('Integration error: %s' % e)
+            write('Integration error: {}'.format(e))
             fdpelogpath = get_afilepath()
             fdpelogprefix = get_afileprefix()
             if fdpelogpath:
                 try:
                     shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
-                    write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+                    write('Archived fast_dp.error to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
                 except:
-                    write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+                    write('fast_dp.error not archived to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
             return
 
         try:
@@ -383,7 +383,7 @@ class FastDP:
                 self._resolution_high = resol
 
         except RuntimeError as e:
-            write('Pointgroup error: %s' % e)
+            write('Pointgroup error: {}'.format(e))
             return
 
         try:
@@ -395,7 +395,7 @@ class FastDP:
                                   self._metadata['pixel'][0] * beam_pixels[0])
 
         except RuntimeError as e:
-            write('Scaling error: %s' % e)
+            write('Scaling error: {}'.format(e))
             return
 
         try:
@@ -406,23 +406,20 @@ class FastDP:
             if mtzlogpath:
                try:
                    shutil.copyfile('fast_dp.mtz',os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz'))
-                   write('Archived fast_dp.mtz to %s' % os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')) 
+                   write('Archived fast_dp.mtz to {}'.format(os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')))
                except:
-                   write('fast_dp.mtz not archived to %s' % os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')) 
+                   write('fast_dp.mtz not archived to {}'.format(os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')))
         except RuntimeError as e:
-            write('Merging error: %s' % e)
+            write('Merging error: {}'.format(e))
             return
 
-        write('Merging point group: %s' % self._space_group)
-        write('Unit cell: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-              self._unit_cell)
+        write('Merging point group: {}'.format(self._space_group))
+        write('Unit cell: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(self._unit_cell))
 
         duration = time.time() - step_time
-        write('Processing took %s (%d s) [%d reflections]' %
-              (time.strftime('%Hh %Mm %Ss',
-                             time.gmtime(duration)), duration,
-               self._nref))
-        write('RPS: %.1f' % (float(self._nref) / duration))
+        write('Processing took {} ({} s) [{} reflections]'.format((time.strftime('%Hh %Mm %Ss',
+                             time.gmtime(duration)), duration, self._nref)))
+        write('RPS: {:.1f}'.format((float(self._nref) / duration)))
 
         # write out json and xml
         for func in (output.write_json, output.write_ispyb_xml):
@@ -558,8 +555,8 @@ def main():
         while cur_offset <= prefix_end:
             log_archive_prefix = log_archive_prefix+components[cur_offset]+'_'
             cur_offset = cur_offset+1
-    write('log_archive_path: %s'% log_archive_path)
-    write('log_archive_prefix: %s'% log_archive_prefix)
+    write('log_archive_path: {}'.format(log_archive_path))
+    write('log_archive_prefix: {}'.format(log_archive_prefix))
     if (log_offset < -1):
         set_afilepath(log_archive_path)
         set_afileprefix(log_archive_prefix)
@@ -568,8 +565,8 @@ def main():
     try:
         fast_dp = FastDP()
         fast_dp._commandline = commandline
-        write('Fast_DP installed in: %s' % os.environ['FAST_DP_ROOT'])
-        write('Starting image: %s' % image)
+        write('Fast_DP installed in: {}'.format(os.environ['FAST_DP_ROOT']))
+        write('Starting image: {}'.format(image))
         missing = fast_dp.set_start_image(image)
         if options.beam:
             x, y = tuple(map(float, options.beam.split(',')))
@@ -589,10 +586,10 @@ def main():
 
         if options.execution_hosts:
             fast_dp.set_execution_hosts(options.execution_hosts.split(','))
-            write('Execution hosts: %s' % ' '.join(fast_dp.get_execution_hosts()))
+            write('Execution hosts: {}'.format(' '.join(fast_dp.get_execution_hosts())))
         if options.pa_host:
             fast_dp.set_pa_host(options.pa_host)
-            write('pointless/aimless host: %s' % fast_dp.get_pa_host())
+            write('pointless/aimless host: {}'.format(fast_dp.get_pa_host()))
 
         if options.number_of_jobs:
             if options.maximum_number_of_jobs:
@@ -628,8 +625,7 @@ def main():
             fast_dp.set_last_image(last_image)
 
         if missing:
-            raise RuntimeError, 'images missing: %s' % \
-                ' '.join(map(str, missing))
+            raise RuntimeError('images missing: {}'.format(' '.join(map(str, missing))))
 
         if options.resolution_low:
             fast_dp.set_resolution_low(float(options.resolution_low))
@@ -644,30 +640,29 @@ def main():
             try:
                 spacegroup = check_spacegroup_name(options.spacegroup)
                 fast_dp.set_input_spacegroup(spacegroup)
-                write('Set spacegroup: %s' % spacegroup)
+                write('Set spacegroup: {}'.format(spacegroup))
             except RuntimeError:
-                write('Spacegroup %s not recognised: ignoring' % \
-                      options.spacegroup)
+                write('Spacegroup {} not recognised: ignoring'.format(options.spacegroup))
 
         if options.cell:
             assert(options.spacegroup)
             cell = check_split_cell(options.cell)
-            write('Set cell: %.2f %.2f %.2f %.2f %.2f %.2f' % cell)
+            write('Set cell: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}'.format(cell))
             fast_dp.set_input_cell(cell)
 
         fast_dp.process()
 
     except Exception as e:
         traceback.print_exc(file = open('fast_dp.error', 'w'))
-        write('Fast DP error: %s' % str(e))
+        write('Fast DP error: {}'.format(str(e)))
         fdpelogpath = get_afilepath()
         fdpelogprefix = get_afileprefix()
         if fdpelogpath:
            try:
                shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
-               write('Archived fast_dp.error to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+               write('Archived fast_dp.error to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
            except:
-               write('fast_dp.error not archived to %s' % os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')) 
+               write('fast_dp.error not archived to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
 
 
     json_stuff = { }

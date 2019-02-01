@@ -26,7 +26,7 @@ def write_ispyb_xml(commandline, spacegroup, unit_cell,
                                 'lib', 'templates', 'ispyb.xml')
 
     if not os.path.exists(xml_template):
-        print('XML template not found: %s' % xml_template)
+        print('XML template not found: {}'.format(xml_template))
         return
 
     open(filename, 'w').write(

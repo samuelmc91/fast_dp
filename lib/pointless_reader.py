@@ -33,7 +33,7 @@ def read_pointless_xml(pointless_xml_file):
         lauegroup = str(s.getElementsByTagName(
             'LaueGroupName')[0].childNodes[0].data).strip()
         if lauegroup[0] == 'H':
-            lauegroup = 'R%s' % lauegroup[1:]
+            lauegroup = 'R{}'.format(lauegroup[1:])
         pointgroup = sgtbx.space_group_type(lauegroup).group(
             ).build_derived_acentric_group().type().number()
         reindex = s.getElementsByTagName(

@@ -74,7 +74,7 @@ def read_correct_lp_get_resolution(correct_lp_file):
             break
 
     if rec < 0:
-        raise RuntimeError, 'resolution information not found'
+        raise RuntimeError('resolution information not found')
 
     j = rec
 
