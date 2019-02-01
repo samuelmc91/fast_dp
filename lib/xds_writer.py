@@ -147,21 +147,22 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
     # cell, spacegroup
 
     fout.write('SPACE_GROUP_NUMBER=1\n')
-    fout.write('UNIT_CELL_CONSTANTS=%f %f %f %f %f %f\n' % tuple(cell))
+    fout.write('UNIT_CELL_CONSTANTS={0[0]} {0[1]} {0[2]} {0[3]} {0[4]} {0[5]}\n'.format(tuple(cell)))
+    # fout.write('UNIT_CELL_CONSTANTS=%f %f %f %f %f %f\n' % tuple(cell))
 
     # then we get the non-template stuff
 
-    fout.write('DATA_RANGE=%d %d\n' % (metadata['start'],
+    fout.write('DATA_RANGE={0} {1}\n'.format(metadata['start'],
                                        metadata['end']))
 
     # compute the background range as min(all, 5)
 
     if metadata['end'] - metadata['start'] > 5:
-        fout.write('BACKGROUND_RANGE=%d %d\n' % \
-                   (metadata['start'], metadata['start'] + 5))
+        fout.write('BACKGROUND_RANGE={0} {1}\n'.format( 
+                   metadata['start'], metadata['start'] + 5)
     else:
-        fout.write('BACKGROUND_RANGE=%d %d\n' % (metadata['start'],
-                                                 metadata['end']))
+        fout.write('BACKGROUND_RANGE={0} {1}\n'.format(metadata['start'],
+                                                 metadata['end'])
 
     # by default autoindex off all images - can make this better later on.
     # Ok: I think it is too slow already. Three wedges, as per xia2...
@@ -172,7 +173,7 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
     wedge_size = int(round(5.0  / metadata['oscillation'][1])) - 1
 
     wedge = (images[0], images[0] + wedge_size)
-    fout.write('SPOT_RANGE=%d %d\n' % wedge)
+    fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
 
     # if we have more than 90 degrees of data, use wedges at the start,
     # 45 degrees in and 90 degrees in, else use a wedge at the start,
@@ -181,23 +182,23 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
     # if less than 15 degrees of data, use all of the images
 
     if (metadata['end'] - metadata['start']) * metadata['oscillation'][1] < 15:
-        fout.write('SPOT_RANGE=%d %d\n' % (metadata['start'],
+        fout.write('SPOT_RANGE={0} {1}\n'.format(metadata['start'],
                                            metadata['end']))
 
     elif int(90.0 / metadata['oscillation'][1]) + wedge_size in images:
         wedge = (int(45.0 / metadata['oscillation'][1]),
                  int(45.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
         wedge = (int(90.0 / metadata['oscillation'][1]),
                  int(90.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
 
     else:
         mid = (len(images) / 2) - wedge_size + images[0] - 1
         wedge = (mid, mid + wedge_size)
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
         wedge = (images[-5], images[-1])
-        fout.write('SPOT_RANGE=%d %d\n' % wedge)
+        fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
 
     fout.close()
 
