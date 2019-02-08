@@ -79,4 +79,4 @@ def get_number_cpus():
 if __name__ == '__main__':
     import os
     os.environ['FAST_DP_FORKINTEGRATE'] = '1'
-    print ''.join(run_job('env'))
+    print(''.join(run_job('env')))

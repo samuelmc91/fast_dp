@@ -102,7 +102,7 @@ def check_spacegroup_name(spacegroup_name):
         if spacegroup_name == record.split()[3]:
             return spacegroup_name
 
-    raise RuntimeError('spacegroup name "{}" not recognised'.format(spacegroup_name))
+    raise RuntimeError('spacegroup name "{}" not recognised').format(spacegroup_name)
 
 def check_split_cell(cell_string):
     '''Will return tuple of floats a, b, c, alpha, beta, gamma from input
@@ -113,7 +113,7 @@ def check_split_cell(cell_string):
 
     if not cell_string.count(',') == 5:
         raise RuntimeError('{} should be of the form {}').format(
-              (cell_string, ideal_string))
+               cell_string, ideal_string)
 
     a, b, c, alpha, beta, gamma = tuple(
         map(float, cell_string.split(',')))
@@ -238,4 +238,4 @@ if __name__ == '__main__':
     import sys
 
     for token in sys.argv[1:]:
-        print ersatz_pointgroup(token)
+        print(ersatz_pointgroup(token))

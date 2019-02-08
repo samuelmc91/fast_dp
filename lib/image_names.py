@@ -37,7 +37,7 @@ def image2template(filename):
             for digit in string.digits:
                 number = number.replace(digit, '#')
 
-            return patterns[pattern] % (prefix, number, exten)
+            return patterns[pattern].format(prefix, number, exten)
 
     raise RuntimeError('filename {} not understood as a template').format(
           filename)
