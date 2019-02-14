@@ -248,23 +248,21 @@ class FastDP:
         autoindex, integrate, pointgroup, scale and merge.'''
 
         try:
-
             hostname = os.environ['HOSTNAME'].split('.')[0]
             write('Running on: {}'.format(hostname))
-
         except Exception:
             pass
 
         # check input frame limits
 
-        if not self._first_image is None:
+        if self._first_image is not None:
             if self._metadata['start'] < self._first_image:
                 start = self._metadata['start']
                 self._metadata['start'] = self._first_image
                 self._metadata['phi_start'] += self._metadata['phi_width'] * \
                                                (self._first_image - start)
 
-        if not self._last_image is None:
+        if self._last_image is not None:
             if self._metadata['end'] > self._last_image:
                 self._metadata['end'] = self._last_image
 
