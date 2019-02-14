@@ -76,7 +76,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     wedge_size = int(round(5.0  / metadata['oscillation'][1])) - 1
 
     wedge = (images[0], images[0] + wedge_size)
-    fout.write('SPOT_RANGE={} {}\n'.format(wedge))
+    fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
 
     # if we have more than 90 degrees of data, use wedges at the start,
     # 45 degrees in and 90 degrees in, else use a wedge at the start,
@@ -91,17 +91,17 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     elif int(90.0 / metadata['oscillation'][1]) + wedge_size in images:
         wedge = (int(45.0 / metadata['oscillation'][1]),
                  int(45.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
+        fout.write('SPOT_RANGE={0[1]} {0[1]}\n'.format(wedge))
         wedge = (int(90.0 / metadata['oscillation'][1]),
                  int(90.0 / metadata['oscillation'][1]) + wedge_size)
-        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
+        fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
 
     else:
         mid = (len(images) / 2) - wedge_size + images[0] - 1
         wedge = (mid, mid + wedge_size)
-        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
+        fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
         wedge = (images[-wedge_size], images[-1])
-        fout.write('SPOT_RANGE={} {}\n'.format(wedge))
+        fout.write('SPOT_RANGE={0[0]} {0[1]}\n'.format(wedge))
 
     fout.close()
 
