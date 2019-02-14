@@ -488,7 +488,7 @@ def main():
     parser.add_option('-1', '--first-image', dest = 'first_image',
                       help = 'First image for processing')
     parser.add_option('-N', '--last-image', dest = 'last_image',
-                      help = 'First image for processing')
+                      help = 'Last image for processing')
 
     parser.add_option('-r', '--resolution-high', dest = 'resolution_high',
                       help = 'High resolution limit')
