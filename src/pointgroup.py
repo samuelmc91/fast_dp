@@ -66,6 +66,10 @@ def decide_pointgroup(p1_unit_cell, metadata,
 
     pointless_results = read_pointless_xml(xmlout)
 
+    # space_group_number needs to be initialized
+    # otherwise, an UnboundLocalError occurs - J Diaz
+    space_group_number = -1
+
     # select the top solution which is allowed, return this
 
     if input_spacegroup:

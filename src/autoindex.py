@@ -46,15 +46,15 @@ def autoindex(metadata, input_cell = None):
 
     write('All autoindexing results:')
     write('{:3s} {:6s} {:6s} {:6s} {:6s} {:6s} {:6s}'.format(
-          ('Lattice', 'a', 'b', 'c', 'alpha', 'beta', 'gamma')))
+          'Lattice ', 'a', 'b', 'c', 'alpha', 'beta', 'gamma'))
 
     for r in reversed(sorted(results)):
         if not type(r) == type(1):
             continue
         cell = results[r][1]
         write('{:7s} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(
-              (spacegroup_to_lattice(r), cell[0], cell[1], cell[2],
-               cell[3], cell[4], cell[5])))
+               spacegroup_to_lattice(r), cell[0], cell[1], cell[2],
+               cell[3], cell[4], cell[5]))
 
     # should probably print this for debuging
 

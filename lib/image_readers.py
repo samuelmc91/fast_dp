@@ -28,64 +28,64 @@ def get_dectris_serial_no(record):
 __hdf5_lib = ''
 __eiger_lib = ''
 def find_hdf5_lib():
-  global __hdf5_lib
-  global __eiger_lib
-  if __eiger_lib:
-    return __eiger_lib
-  if __hdf5_lib:
-    return __hdf5_lib
-  import os
-  for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.isfile(os.path.join(d, 'eiger2cbf-so-worker')):
-       if os.path.isfile(os.path.join(d, 'eiger2cbf.so')):
-          __eiger_lib ='LIB={}\n'.format(os.path.join(d,'eiger2cbf.so'))
-          return __eiger_lib
-       elif  os.path.isfile(os.path.join(d, '..','lib','eiger2cbf.so')):
-          __eiger_lib ='LIB={}\n'.format(os.path.join(d,'..','lib','eiger2cbf.so'))
-          return __eiger_lib
-  for d in os.environ['PATH'].split(os.pathsep):
-    if os.path.isfile(os.path.join(d, 'xds_par')):
-      __hdf5_lib = 'LIB={}\n'.format(os.path.join(d,'dectris-neggia.so'))
-      return __hdf5_lib
-  return ''
+    global __hdf5_lib
+    global __eiger_lib
+    if __eiger_lib:
+        return __eiger_lib
+    if __hdf5_lib:
+        return __hdf5_lib
+    import os
+    for d in os.environ['PATH'].split(os.pathsep):
+        if os.path.isfile(os.path.join(d, 'eiger2cbf-so-worker')):
+            if os.path.isfile(os.path.join(d, 'eiger2cbf.so')):
+                __eiger_lib ='LIB={}\n'.format(os.path.join(d,'eiger2cbf.so'))
+                return __eiger_lib
+            elif os.path.isfile(os.path.join(d, '..','lib','eiger2cbf.so')):
+                __eiger_lib ='LIB={}\n'.format(os.path.join(d,'..','lib','eiger2cbf.so'))
+                return __eiger_lib
+    for d in os.environ['PATH'].split(os.pathsep):
+        if os.path.isfile(os.path.join(d, 'xds_par')):
+            __hdf5_lib = 'LIB={}\n'.format(os.path.join(d,'dectris-neggia.so'))
+            return __hdf5_lib
+    return ''
 
 try:
-  import bz2
+    import bz2
 except: # intentional
-  bz2 = None
+    bz2 = None
 
 try:
-  import gzip
+    import gzip
 except: # intentional
-  gzip = None
+    gzip = None
 
 
 def is_bz2(filename):
-  if not '.bz2' in filename[-4:]:
-    return False
-  return 'BZh' in open(filename, 'rb').read(3)
+    if not '.bz2' in filename[-4:]:
+        return False
+    return 'BZh' in open(filename, 'rb').read(3)
 
 def is_gzip(filename):
-  if not '.gz' in filename[-3:]:
-    return False
-  magic = open(filename, 'rb').read(2)
-  return ord(magic[0]) == 0x1f and ord(magic[1]) == 0x8b
+    if not '.gz' in filename[-3:]:
+        return False
+    magic = open(filename, 'rb').read(2)
+    return ord(magic[0]) == 0x1f and ord(magic[1]) == 0x8b
 
 def open_file(filename, mode='rb', url=False):
-  if is_bz2(filename):
-    if bz2 is None:
-      raise RuntimeError('bz2 file provided without bz2 module')
-    fh_func = lambda: bz2.BZ2File(filename, mode)
+    if is_bz2(filename):
+        if bz2 is None:
+            raise RuntimeError('bz2 file provided without bz2 module')
+        fh_func = lambda: bz2.BZ2File(filename, mode)
 
-  elif is_gzip(filename):
-    if gzip is None:
-      raise RuntimeError('gz file provided without gzip module')
-    fh_func = lambda: gzip.GzipFile(filename, mode)
+    elif is_gzip(filename):
+        if gzip is None:
+            raise RuntimeError('gz file provided without gzip module')
+        fh_func = lambda: gzip.GzipFile(filename, mode)
 
-  else:
-    fh_func = lambda: open(filename, mode)
+    else:
+        fh_func = lambda: open(filename, mode)
 
-  return fh_func()
+    return fh_func()
 
 def failover_hdf5(hdf5_file):
     from dxtbx.serialize import xds
@@ -434,7 +434,7 @@ def read_image_metadata(image):
             elif detector == 'RIGAKU':
                 metadata['detector'] = 'RIGAKU'
             else:
-                raise RuntimeError, 'detector {} not yet supported'.format(
+                raise RuntimeError('detector {} not yet supported').format(
                       detector)
 
     if (metadata['detector'] == 'PILATUS_6M') and \
@@ -467,4 +467,4 @@ if __name__ == '__main__':
     import sys
     md = read_image_metadata(sys.argv[1])
     for name in sorted(md):
-        print name, md[name]
+        print(name, md[name])
