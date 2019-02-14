@@ -290,14 +290,14 @@ class FastDP:
 
         step_time = time.time()
 
-        write('Processing images: {} -> {}'.format((self._metadata['start'],
-                                               self._metadata['end'])))
+        write('Processing images: {} -> {}'.format(self._metadata['start'],
+                                               self._metadata['end']))
 
         phi_end = self._metadata['phi_start'] + self._metadata['phi_width'] * \
                   (self._metadata['end'] - self._metadata['start'] + 1)
 
-        write('Phi range: {:.2f} -> {:.2f}'.format((self._metadata['phi_start'],
-                                           phi_end)))
+        write('Phi range: {:.2f} -> {:.2f}'.format(self._metadata['phi_start'],
+                                           phi_end))
 
         write('Template: {}'.format(self._metadata['template']))
         write('Wavelength: {:.5f}'.format(self._metadata['wavelength']))
@@ -350,7 +350,7 @@ class FastDP:
             mosaics = integrate(self._metadata, self._p1_unit_cell,
                                 self._resolution_low, self._n_jobs,
                                 self._n_cores)
-            write('Mosaic spread: {:.2f} < {:.2f} < {:.2f}'.format(tuple(mosaics)))
+            write('Mosaic spread: {0[0]:.2f} < {0[1]:.2f} < {0[2]:.2f}'.format(tuple(mosaics)))
         except RuntimeError as e:
             traceback.print_exc(file = open('fast_dp.error', 'w'))
             write('Integration error: {}'.format(e))
