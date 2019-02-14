@@ -421,7 +421,7 @@ class FastDP:
 
         # write out json and xml
         for func in (output.write_json, output.write_ispyb_xml):
-          func(self._commandline, self._space_group,
+            func(self._commandline, self._space_group,
                self._unit_cell, self._xml_results,
                self._start_image, self._refined_beam)
 
