@@ -412,11 +412,12 @@ class FastDP:
             return
 
         write('Merging point group: {}'.format(self._space_group))
-        write('Unit cell: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(self._unit_cell))
+        write('Unit cell: {0[0]:6.2f} {0[1]:6.2f} {0[2]:6.2f} {0[3]:6.2f} {0[4]:6.2f} {0[5]:6.2f}'.format(self._unit_cell))
 
         duration = time.time() - step_time
-        write('Processing took {} ({} s) [{} reflections]'.format((time.strftime('%Hh %Mm %Ss',
-                             time.gmtime(duration)), duration, self._nref)))
+        write('Processing took {} ({:d} s) [{:d} reflections]'.format(
+			time.strftime('%Hh %Mm %Ss',time.gmtime(duration)), int(duration), self._nref))
+
         write('RPS: {:.1f}'.format((float(self._nref) / duration)))
 
         # write out json and xml
