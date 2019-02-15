@@ -89,7 +89,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
                 space_group_number = r[1]
                 unit_cell = results[lattice_to_spacegroup(r[0])][1]
                 write('Happy with sg# {}'.format(space_group_number))
-                write('{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(
+                write('{0[0]:6.2f} {0[1]:6.2f} {0[2]:6.2f} {0[3]:6.2f} {0[4]:6.2f} {0[5]:6.2f}'.format(
                       unit_cell))
                 sg_accepted = True
                 break
