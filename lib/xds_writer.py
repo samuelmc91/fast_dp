@@ -22,8 +22,8 @@ def write_xds_inp_autoindex(metadata, xds_inp):
                             '{}_INDEX.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError('template for {} not found at {}').format(
-              metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}'.format(
+              metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 
@@ -116,8 +116,8 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
                             '{}_INDEX.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError('template for {} not found at {}').format(
-               metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}'.format(
+               metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 
@@ -274,8 +274,8 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number, \
                             '{}_REDO.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError('template for {} not found at {}').format(
-               metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}'.format(
+               metadata['detector'], template))
 
     template_fin = open(template, 'r')
 
@@ -394,8 +394,8 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
                             '{}_CORRECT.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError('template for {} not found at {}').format(
-               metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}'.format(
+               metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 
@@ -471,8 +471,8 @@ def write_xds_inp_correct_no_cell(metadata,
                             '{}_CORRECT_NO_CELL.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError('template for {} not found at {}').format(
-               metadata['detector'], template)
+        raise RuntimeError('template for {} not found at {}'.format(
+               metadata['detector'], template))
 
     template_str = open(template, 'r').read().strip()
 

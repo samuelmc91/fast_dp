@@ -39,8 +39,8 @@ def image2template(filename):
 
             return patterns[pattern].format(prefix, number, exten)
 
-    raise RuntimeError('filename {} not understood as a template').format(
-          filename)
+    raise RuntimeError('filename {} not understood as a template'.format(
+          filename))
 
 def image2image(filename):
     '''Return an integer for the template to match this filename.'''
@@ -68,8 +68,8 @@ def image2image(filename):
 
             return int(number)
 
-    raise RuntimeError('filename {} not understood as a template').format(
-          filename)
+    raise RuntimeError('filename {} not understood as a template'.format(
+          filename))
 
 def image2template_directory(filename):
     '''Separate out the template and directory from an image name.'''

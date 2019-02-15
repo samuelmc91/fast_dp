@@ -31,17 +31,15 @@ def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
             continue
         lastrecord = open('{}.LP'.format(step)).readlines()[-1]
         if '!!! ERROR !!!' in lastrecord:
-            raise RuntimeError('error in {}: {}').format(
-                  (step, lastrecord.replace(
-                '!!! ERROR !!!', '').strip().lower()))
+            raise RuntimeError('error in {}: {}'.format(
+                  step, lastrecord.replace('!!! ERROR !!!', '').strip().lower()))
 
     if not os.path.exists('INTEGRATE.LP'):
         step = 'INTEGRATE'
         for record in open('LP_01.tmp').readlines():
             if '!!! ERROR !!! AUTOMATIC DETERMINATION OF SPOT SIZE ' in record:
                 raise RuntimeError('error in {}: {}').format(
-                      (step, record.replace(
-                    '!!! ERROR !!!', '').strip().lower()))
+                      step, record.replace('!!! ERROR !!!', '').strip().lower()))
             elif '!!! ERROR !!! CANNOT OPEN OR READ FILE LP_01.tmp' in record:
                 raise RuntimeError('integration error: cluster error')
 

@@ -12,10 +12,10 @@ def check_file_readable(filename):
     only if everything is OK.'''
 
     if not os.path.exists(filename):
-        raise RuntimeError('file {} not found').format(filename)
+        raise RuntimeError('file {} not found'.format(filename))
 
     if not os.access(filename, os.R_OK):
-        raise RuntimeError('file {} not readable').format(filename)
+        raise RuntimeError('file {} not readable'.format(filename))
 
     return
 
@@ -434,8 +434,8 @@ def read_image_metadata(image):
             elif detector == 'RIGAKU':
                 metadata['detector'] = 'RIGAKU'
             else:
-                raise RuntimeError('detector {} not yet supported').format(
-                      detector)
+                raise RuntimeError('detector {} not yet supported'.format(
+                      detector))
 
     if (metadata['detector'] == 'PILATUS_6M') and \
        (metadata['size'] == (1679, 1475)):
