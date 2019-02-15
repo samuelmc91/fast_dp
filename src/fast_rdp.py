@@ -106,7 +106,7 @@ class FastRDP:
 
         try:
             hostname = os.environ['HOSTNAME'].split('.')[0]
-            write('Running on: {}'.format(hostname))
+            write('Running on: {}').format(hostname)
         except Exception:
             pass
 
@@ -124,15 +124,16 @@ class FastRDP:
 
         step_time = time.time()
 
-        write('Processing images: {} -> {}'.format((self._metadata['start'],
-                                               self._metadata['end'])))
+        write('Processing images: {} -> {}'.format(
+                   self._metadata['start'], self._metadata['end']))
 
+                                               
         phi_end = self._metadata['phi_start'] + self._metadata['phi_width'] * \
                   (self._metadata['end'] - self._metadata['start'] + 1)
 
-        write('Phi range: {:.2f} -> {:.2f}'.format((self._metadata['phi_start'],
-                                           phi_end)))
-
+        write('Phi range: {:.2f} -> {:.2f}'.format(
+                   self._metadata['phi_start'], phi_end))
+                                           
         write('Template: {}'.format(self._metadata['template']))
         write('Wavelength: {:.5f}'.format(self._metadata['wavelength']))
         write('Working in: {}'.format(os.getcwd()))
@@ -147,16 +148,16 @@ class FastRDP:
         results = read_xds_idxref_lp('IDXREF.LP')
 
         write('For reference, all indexing results:')
-        write('%3s %6s %6s %6s %6s %6s %6s' % \
-            ('Lattice', 'a', 'b', 'c', 'alpha', 'beta', 'gamma'))
+        write('{:3s} {:6s} {:6s} {:6s} {:6s} {:6s} {:6s}'.format(
+              'Lattice ', 'a', 'b', 'c', 'alpha', 'beta', 'gamma'))
 
         for r in reversed(sorted(results)):
             if not type(r) == type(1):
                 continue
             cell = results[r][1]
-            write('%7s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' % \
-                (spacegroup_to_lattice(r), cell[0], cell[1], cell[2],
-                cell[3], cell[4], cell[5]))
+            write('{:7s} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(
+                  spacegroup_to_lattice(r), cell[0], cell[1], cell[2],
+                  cell[3], cell[4], cell[5]))
 
         try:
 

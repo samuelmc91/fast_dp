@@ -248,23 +248,21 @@ class FastDP:
         autoindex, integrate, pointgroup, scale and merge.'''
 
         try:
-
             hostname = os.environ['HOSTNAME'].split('.')[0]
             write('Running on: {}'.format(hostname))
-
         except Exception:
             pass
 
         # check input frame limits
 
-        if not self._first_image is None:
+        if self._first_image is not None:
             if self._metadata['start'] < self._first_image:
                 start = self._metadata['start']
                 self._metadata['start'] = self._first_image
                 self._metadata['phi_start'] += self._metadata['phi_width'] * \
                                                (self._first_image - start)
 
-        if not self._last_image is None:
+        if self._last_image is not None:
             if self._metadata['end'] > self._last_image:
                 self._metadata['end'] = self._last_image
 
@@ -414,16 +412,17 @@ class FastDP:
             return
 
         write('Merging point group: {}'.format(self._space_group))
-        write('Unit cell: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}'.format(self._unit_cell))
+        write('Unit cell: {0[0]:6.2f} {0[1]:6.2f} {0[2]:6.2f} {0[3]:6.2f} {0[4]:6.2f} {0[5]:6.2f}'.format(self._unit_cell))
 
         duration = time.time() - step_time
-        write('Processing took {} ({} s) [{} reflections]'.format((time.strftime('%Hh %Mm %Ss',
-                             time.gmtime(duration)), duration, self._nref)))
+        write('Processing took {} ({:d} s) [{:d} reflections]'.format(
+			time.strftime('%Hh %Mm %Ss',time.gmtime(duration)), int(duration), self._nref))
+
         write('RPS: {:.1f}'.format((float(self._nref) / duration)))
 
         # write out json and xml
         for func in (output.write_json, output.write_ispyb_xml):
-          func(self._commandline, self._space_group,
+            func(self._commandline, self._space_group,
                self._unit_cell, self._xml_results,
                self._start_image, self._refined_beam)
 
@@ -488,7 +487,7 @@ def main():
     parser.add_option('-1', '--first-image', dest = 'first_image',
                       help = 'First image for processing')
     parser.add_option('-N', '--last-image', dest = 'last_image',
-                      help = 'First image for processing')
+                      help = 'Last image for processing')
 
     parser.add_option('-r', '--resolution-high', dest = 'resolution_high',
                       help = 'High resolution limit')
