@@ -148,20 +148,19 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
 
     fout.write('SPACE_GROUP_NUMBER=1\n')
     fout.write('UNIT_CELL_CONSTANTS={0[0]} {0[1]} {0[2]} {0[3]} {0[4]} {0[5]}\n'.format(tuple(cell)))
-    # fout.write('UNIT_CELL_CONSTANTS=%f %f %f %f %f %f\n' % tuple(cell))
 
     # then we get the non-template stuff
 
-    fout.write('DATA_RANGE={0} {1}\n'.format(
+    fout.write('DATA_RANGE={} {}\n'.format(
                    metadata['start'], metadata['end']))
 
     # compute the background range as min(all, 5)
 
     if metadata['end'] - metadata['start'] > 5:
-        fout.write('BACKGROUND_RANGE={0} {1}\n'.format( 
+        fout.write('BACKGROUND_RANGE={} {}\n'.format( 
                    metadata['start'], metadata['start'] + 5))
     else:
-        fout.write('BACKGROUND_RANGE={0} {1}\n'.format(
+        fout.write('BACKGROUND_RANGE={} {}\n'.format(
                    metadata['start'], metadata['end']))
 
     # by default autoindex off all images - can make this better later on.
@@ -182,7 +181,7 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
     # if less than 15 degrees of data, use all of the images
 
     if (metadata['end'] - metadata['start']) * metadata['oscillation'][1] < 15:
-        fout.write('SPOT_RANGE={0} {1}\n'.format(
+        fout.write('SPOT_RANGE={} {}\n'.format(
                        metadata['start'], metadata['end']))
 
     elif int(90.0 / metadata['oscillation'][1]) + wedge_size in images:
@@ -216,7 +215,7 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
                             '{}_INTEGRATE.INP'.format(metadata['detector']))
 
     if not os.path.exists(template):
-        raise RuntimeError('template for {0} not found at {1}'.format(
+        raise RuntimeError('template for {} not found at {}'.format(
               metadata['detector'], template))
 
     template_fin = open(template, 'r')
