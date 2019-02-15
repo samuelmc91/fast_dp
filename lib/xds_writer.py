@@ -410,7 +410,7 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
         corrections = 'ALL'
     else:
         corrections = '!'
-
+    
     fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = get_number_cpus(),

@@ -66,14 +66,6 @@ def decide_pointgroup(p1_unit_cell, metadata,
 
     pointless_results = read_pointless_xml(xmlout)
 
-    # space_group_number needs to be initialized
-    # otherwise, an UnboundLocalError occurs ---
-    space_group_number = -1
-    
-    # unit_cell has to be initialized otherwise an
-    # UnboundLocalError occurs ---
-    unit_cell = -1
-
     # select the top solution which is allowed, return this
 
     if input_spacegroup:
@@ -110,7 +102,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
                       unit_cell))
                 break
             else:
-                write('Rejected solution {} {:3d}'.format(r))
+                write('Rejected solution {0[0]} {0[1]:3d}'.format(r))
 
     # this should probably be a proper check...
     assert(space_group_number)
