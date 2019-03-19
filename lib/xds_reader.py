@@ -52,7 +52,7 @@ def read_xds_correct_lp(correct_lp_file):
                 space_group_number = int(record.split()[-1])
             except:
                 space_group_number = 0
-        if 'UNIT_CELL_CONSTANTS=' in record and not 'used' in record:
+        if 'UNIT_CELL_CONSTANTS=' in record and 'used' not in record:
             unit_cell = tuple(map(float, record.split()[-6:]))
 
     return unit_cell, space_group_number
@@ -68,7 +68,6 @@ def read_correct_lp_get_resolution(correct_lp_file):
 
     for j in range(len(correct_lp)):
         record = correct_lp[j]
-
         if 'RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR' in record:
             rec = j + 3
             break
