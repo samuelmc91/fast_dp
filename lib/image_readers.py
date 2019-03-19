@@ -1,3 +1,4 @@
+import sys
 import time
 import os
 from logger import write
@@ -6,6 +7,9 @@ from image_names import image2template_directory, find_matching_images, \
     template_directory_number2image
 
 from run_job import run_job
+
+from dxtbx.serialize import xds
+from dxtbx.datablock import DataBlockFactory
 
 def check_file_readable(filename):
     '''Check that the file filename exists and that it can be read. Returns
@@ -34,7 +38,6 @@ def find_hdf5_lib():
         return __eiger_lib
     if __hdf5_lib:
         return __hdf5_lib
-    import os
     for d in os.environ['PATH'].split(os.pathsep):
         if os.path.isfile(os.path.join(d, 'eiger2cbf-so-worker')):
             if os.path.isfile(os.path.join(d, 'eiger2cbf.so')):
@@ -76,21 +79,16 @@ def open_file(filename, mode='rb', url=False):
         if bz2 is None:
             raise RuntimeError('bz2 file provided without bz2 module')
         fh_func = lambda: bz2.BZ2File(filename, mode)
-
     elif is_gzip(filename):
         if gzip is None:
             raise RuntimeError('gz file provided without gzip module')
         fh_func = lambda: gzip.GzipFile(filename, mode)
-
     else:
         fh_func = lambda: open(filename, mode)
 
     return fh_func()
 
 def failover_hdf5(hdf5_file):
-    from dxtbx.serialize import xds
-    from dxtbx.datablock import DataBlockFactory
-    import time
     t0 = time.time()
     db = DataBlockFactory.from_filenames([hdf5_file])[0]
     sweep = db.extract_sweeps()[0]
@@ -301,7 +299,6 @@ def failover_cbf(cbf_file):
             header['goniometer_is_vertical'] = False
         else:
             header['goniometer_is_vertical'] = True
-
     else:
         header['goniometer_is_vertical'] = False
 
@@ -464,7 +461,6 @@ def read_image_metadata(image):
 # FIXME add some unit tests in here...
 
 if __name__ == '__main__':
-    import sys
     md = read_image_metadata(sys.argv[1])
     for name in sorted(md):
         print(name, md[name])
