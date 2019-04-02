@@ -48,13 +48,10 @@ def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
     for step in ['INTEGRATE']:
         for record in open('{}.LP'.format(step)).readlines():
             if '!!! ERROR !!! AUTOMATIC DETERMINATION OF SPOT SIZE ' in record:
-                raise RuntimeError, 'error in {}: {}'.format(
-                      (step, record.replace(
-                    '!!! ERROR !!!', '').strip().lower()))
+                raise RuntimeError('error in {}: {}'.format(
+                      step, record.replace('!!! ERROR !!!', '').strip().lower()))
             elif '!!! ERROR !!! CANNOT OPEN OR READ FILE LP_01.tmp' in record:
                 raise RuntimeError('integration error: cluster error')
-
-
 
     # if all was ok, look in the working directory for files named
     # forkintegrate_job.o341858 &c. and remove them. - N.B. this is site
