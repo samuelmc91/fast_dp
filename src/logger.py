@@ -1,5 +1,6 @@
 import os
 
+
 class _writer:
     '''A specialist class to write to the screen and fast_dp.log.'''
 
@@ -58,6 +59,7 @@ class _writer:
                 print(self._afilename + ' not available for writing')
                 self._afilename = None
         return
+
 
 write = _writer()
 
