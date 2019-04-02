@@ -17,6 +17,14 @@ import re
 import traceback
 import shutil
 
+if 'FAST_DP_ROOT' not in os.environ:
+    raise RuntimeError('FAST_DP_ROOT not defined')
+
+fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
+
+if fast_dp_lib not in sys.path:
+    sys.path.append(fast_dp_lib)
+
 from run_job import get_number_cpus
 from cell_spacegroup import check_spacegroup_name, check_split_cell, \
      generate_primitive_cell
@@ -31,14 +39,6 @@ from merge import merge
 from pointgroup import decide_pointgroup
 from logger import write, set_afilename, set_afilepath, get_afilepath, set_afileprefix, get_afileprefix
 from optparse import SUPPRESS_HELP, OptionParser
-
-if 'FAST_DP_ROOT' not in os.environ:
-    raise RuntimeError('FAST_DP_ROOT not defined')
-
-fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
-
-if fast_dp_lib not in sys.path:
-    sys.path.append(fast_dp_lib)
 
 
 class FastDP:
