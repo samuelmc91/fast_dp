@@ -11,6 +11,7 @@ from run_job import run_job
 from dxtbx.serialize import xds
 from dxtbx.datablock import DataBlockFactory
 
+
 def check_file_readable(filename):
     '''Check that the file filename exists and that it can be read. Returns
     only if everything is OK.'''
@@ -23,14 +24,17 @@ def check_file_readable(filename):
 
     return
 
+
 def get_dectris_serial_no(record):
-    if not 'S/N' in record:
+    if 'S/N' not in record:
         return '0'
     tokens = record.split()
     return tokens[tokens.index('S/N') + 1]
 
 __hdf5_lib = ''
 __eiger_lib = ''
+
+
 def find_hdf5_lib():
     global __hdf5_lib
     global __eiger_lib
@@ -41,16 +45,17 @@ def find_hdf5_lib():
     for d in os.environ['PATH'].split(os.pathsep):
         if os.path.isfile(os.path.join(d, 'eiger2cbf-so-worker')):
             if os.path.isfile(os.path.join(d, 'eiger2cbf.so')):
-                __eiger_lib ='LIB={}\n'.format(os.path.join(d,'eiger2cbf.so'))
+                __eiger_lib = 'LIB={}\n'.format(os.path.join(d, 'eiger2cbf.so'))
                 return __eiger_lib
-            elif os.path.isfile(os.path.join(d, '..','lib','eiger2cbf.so')):
-                __eiger_lib ='LIB={}\n'.format(os.path.join(d,'..','lib','eiger2cbf.so'))
+            elif os.path.isfile(os.path.join(d, '..', 'lib', 'eiger2cbf.so')):
+                __eiger_lib = 'LIB={}\n'.format(os.path.join(d, '..', 'lib', 'eiger2cbf.so'))
                 return __eiger_lib
     for d in os.environ['PATH'].split(os.pathsep):
         if os.path.isfile(os.path.join(d, 'xds_par')):
-            __hdf5_lib = 'LIB={}\n'.format(os.path.join(d,'dectris-neggia.so'))
+            __hdf5_lib = 'LIB={}\n'.format(os.path.join(d, 'dectris-neggia.so'))
             return __hdf5_lib
     return ''
+
 
 try:
     import bz2
@@ -64,15 +69,17 @@ except: # intentional
 
 
 def is_bz2(filename):
-    if not '.bz2' in filename[-4:]:
+    if '.bz2' not in filename[-4:]:
         return False
     return 'BZh' in open(filename, 'rb').read(3)
 
+
 def is_gzip(filename):
-    if not '.gz' in filename[-3:]:
+    if '.gz' not in filename[-3:]:
         return False
     magic = open(filename, 'rb').read(2)
     return ord(magic[0]) == 0x1f and ord(magic[1]) == 0x8b
+
 
 def open_file(filename, mode='rb', url=False):
     if is_bz2(filename):
@@ -88,6 +95,7 @@ def open_file(filename, mode='rb', url=False):
 
     return fh_func()
 
+
 def failover_hdf5(hdf5_file):
     t0 = time.time()
     db = DataBlockFactory.from_filenames([hdf5_file])[0]
@@ -102,12 +110,12 @@ def failover_hdf5(hdf5_file):
     # returns slow, fast, convention here is reverse
     size = tuple(reversed(d[0].get_image_size()))
 
-    size0k_to_class = {1:'eiger 1M',
-                       2:'eiger 4M',
-                       3:'eiger 9M',
-                       4:'eiger 16M'}
+    size0k_to_class = {1: 'eiger 1M',
+                       2: 'eiger 4M',
+                       3: 'eiger 9M',
+                       4: 'eiger 16M'}
 
-    header = { }
+    header = {}
 
     header['detector_class'] = size0k_to_class[int(size[0]/1000)]
     header['detector'] = size0k_to_class[int(size[0]/1000)].upper().replace(
@@ -137,11 +145,12 @@ def failover_hdf5(hdf5_file):
     header['matching'] = range(images[0], images[1]+1)
     return header
 
+
 def failover_cbf(cbf_file):
     '''CBF files from the latest update to the PILATUS detector cause a
     segmentation fault in diffdump. This is a workaround.'''
 
-    header = { }
+    header = {}
 
     header['two_theta'] = 0.0
 
@@ -211,7 +220,7 @@ def failover_cbf(cbf_file):
             header['size'] = (2290, 2100)
             header['serial_number'] = record.replace(',', '').split()[-1]
             continue
-        
+
         if 'Start_angle' in record:
             header['phi_start'] = float(record.split()[-2])
             continue
@@ -267,7 +276,6 @@ def failover_cbf(cbf_file):
             struct_time = time.strptime(datestring, format)
             header['date'] = time.asctime(struct_time)
             header['epoch'] = time.mktime(struct_time)
-
         except:
             pass
 
@@ -277,7 +285,6 @@ def failover_cbf(cbf_file):
             struct_time = time.strptime(datestring, format)
             header['date'] = time.asctime(struct_time)
             header['epoch'] = time.mktime(struct_time)
-
         except:
             pass
 
@@ -287,7 +294,6 @@ def failover_cbf(cbf_file):
             struct_time = time.strptime(datestring, format)
             header['date'] = time.asctime(struct_time)
             header['epoch'] = time.mktime(struct_time)
-
         except:
             pass
 
@@ -303,6 +309,7 @@ def failover_cbf(cbf_file):
         header['goniometer_is_vertical'] = False
 
     return header
+
 
 def read_image_metadata(image):
     '''Read the image header and send back the resulting metadata in a
@@ -370,9 +377,9 @@ def read_image_metadata(image):
 
     # MAR CCD images record the beam centre in pixels...
 
-    diffdump_output = run_job('diffdump', arguments = [image])
+    diffdump_output = run_job('diffdump', arguments=[image])
 
-    metadata = { }
+    metadata = {}
 
     for record in diffdump_output:
         if 'Wavelength' in record:
@@ -459,6 +466,7 @@ def read_image_metadata(image):
     return metadata
 
 # FIXME add some unit tests in here...
+
 
 if __name__ == '__main__':
     md = read_image_metadata(sys.argv[1])
