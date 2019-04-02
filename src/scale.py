@@ -6,8 +6,9 @@ from xds_writer import write_xds_inp_redo
 from run_job import run_job
 from cell_spacegroup import spacegroup_number_to_name
 
+
 def scale(unit_cell, metadata, space_group_number, resolution_high,
-    resolution_low=30.0, no_jobs=1, no_processors=0):
+          resolution_low=30.0, no_jobs=1, no_processors=0):
     '''Perform the scaling with the spacegroup and unit cell calculated
     from pointless and correct. N.B. this scaling is done by CORRECT.'''
 
@@ -24,11 +25,11 @@ def scale(unit_cell, metadata, space_group_number, resolution_high,
 
     write_xds_inp_correct(metadata, unit_cell,
                           space_group_number, xds_inp,
-                          resolution_high = resolution_high)
+                          resolution_high=resolution_high)
 
     write_xds_inp_redo(metadata, unit_cell,
-                          space_group_number, 'XDS.INP.REDO',
-                          resolution_low, resolution_high, no_jobs, no_processors)
+                       space_group_number, 'XDS.INP.REDO',
+                       resolution_low, resolution_high, no_jobs, no_processors)
 
     shutil.copyfile(xds_inp, 'XDS.INP')
 
@@ -40,7 +41,7 @@ def scale(unit_cell, metadata, space_group_number, resolution_high,
         lastrecord = open('{}.LP'.format(step)).readlines()[-1]
         if '!!! ERROR !!!' in lastrecord:
             raise RuntimeError('error in {}: {}'.format(
-		  step, lastrecord.replace('!!! ERROR !!!', '').strip()))
+                step, lastrecord.replace('!!! ERROR !!!', '').strip()))
 
     # and get the postrefined cell constants from GXPARM.XDS - but continue
     # to work for the old format too...
