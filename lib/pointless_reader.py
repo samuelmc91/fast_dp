@@ -3,6 +3,7 @@ import xml.dom.minidom
 from cell_spacegroup import lauegroup_to_lattice
 from cctbx import sgtbx
 
+
 def read_pointless_xml(pointless_xml_file):
     '''Read through the pointless xml output, return as a list of spacegroup
     numbers in order of likelihood, corresponding to the pointgroup of the
