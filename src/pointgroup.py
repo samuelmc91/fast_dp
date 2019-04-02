@@ -11,8 +11,9 @@ from cell_spacegroup import lattice_to_spacegroup, ersatz_pointgroup, \
 
 from logger import write
 
+
 def decide_pointgroup(p1_unit_cell, metadata,
-                      input_spacegroup = None):
+                      input_spacegroup=None):
     '''Run POINTLESS to get the list of allowed pointgroups (N.B. will
     insist on triclinic symmetry for this scaling step) then run
     pointless on the resulting reflection file to get the idea of the
@@ -52,8 +53,8 @@ def decide_pointgroup(p1_unit_cell, metadata,
 
     pointless_log = run_job(
         'pointless_wrapper',
-        arguments = ['xdsin', xdsin, 'xmlout', xmlout],
-        stdin = ['systematicabsences off'])
+        arguments=['xdsin', xdsin, 'xmlout', xmlout],
+        stdin=['systematicabsences off'])
 
     fout = open('pointless.log', 'w')
 
@@ -69,7 +70,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
     # select the top solution which is allowed, return this
 
     if input_spacegroup:
-        sg_accepted = False;
+        sg_accepted = False
         pointgroup = ersatz_pointgroup(input_spacegroup)
         if pointgroup.startswith('H'):
             pointgroup = pointgroup.replace('H', 'R')
@@ -77,7 +78,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
         for r in pointless_results:
             result_sg = "".join(check_spacegroup_name(r[1]).split(' '))
             if lattice_to_spacegroup(lattice) in results and \
-                   ersatz_pointgroup(result_sg) == pointgroup :
+                    ersatz_pointgroup(result_sg) == pointgroup:
                 space_group_number = r[1]
                 unit_cell = results[lattice_to_spacegroup(r[0])][1]
                 write('Happy with sg# {}'.format(space_group_number))
