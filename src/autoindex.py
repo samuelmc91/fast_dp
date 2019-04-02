@@ -9,6 +9,7 @@ from cell_spacegroup import spacegroup_to_lattice
 
 from logger import write
 
+
 def autoindex(metadata, input_cell = None):
     '''Perform the autoindexing, using metatdata, get a list of possible
     lattices and record / return the triclinic cell constants (get these from
@@ -36,8 +37,8 @@ def autoindex(metadata, input_cell = None):
         lastrecord = open('{}.LP'.format(step)).readlines()[-1]
         if '!!! ERROR !!!' in lastrecord:
             raise RuntimeError('error in {}: {}'.format(
-		  step, lastrecord.replace('!!! ERROR !!!', '').strip()))
-                
+                step, lastrecord.replace('!!! ERROR !!!', '').strip()))
+
     results = read_xds_idxref_lp('IDXREF.LP')
 
     # FIXME if input cell was given, verify that this is an allowed
