@@ -3,6 +3,7 @@ import os
 import string
 import math
 
+
 def image2template(filename):
     '''Return a template to match this filename.'''
 
@@ -19,9 +20,9 @@ def image2template(filename):
     # patterns is a dictionary of possible regular expressions with
     # the format strings to put the file name back together
 
-    patterns = {r'([^\.]*)\.([0-9]+)\Z':'%s.%s%s',
-                r'(.*)_([0-9]*)\.(.*)':'%s_%s.%s',
-                r'(.*?)([0-9]*)\.(.*)':'%s%s.%s'}
+    patterns = {r'([^\.]*)\.([0-9]+)\Z': '%s.%s%s',
+                r'(.*)_([0-9]*)\.(.*)': '%s_%s.%s',
+                r'(.*?)([0-9]*)\.(.*)': '%s%s.%s'}
 
     for pattern in pattern_keys:
         match = re.compile(pattern).match(filename)
@@ -41,6 +42,7 @@ def image2template(filename):
 
     raise RuntimeError('filename {} not understood as a template'.format(
           filename))
+
 
 def image2image(filename):
     '''Return an integer for the template to match this filename.'''
@@ -71,13 +73,13 @@ def image2image(filename):
     raise RuntimeError('filename {} not understood as a template'.format(
           filename))
 
+
 def image2template_directory(filename):
     '''Separate out the template and directory from an image name.'''
 
     directory = os.path.dirname(filename)
 
     if not directory:
-
         # then it should be the current working directory
         directory = os.getcwd()
 
@@ -85,6 +87,7 @@ def image2template_directory(filename):
     template = image2template(image)
 
     return template, directory
+
 
 def find_matching_images(template, directory):
     '''Find images which match the input template in the directory
@@ -116,6 +119,7 @@ def find_matching_images(template, directory):
     images.sort()
 
     return images
+
 
 def template_directory_number2image(template, directory, number):
     '''Construct the full path to an image from the template, directory
