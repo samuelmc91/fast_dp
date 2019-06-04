@@ -65,6 +65,8 @@ def spacegroup_to_lattice(input_spacegroup):
                 continue
             if input_spacegroup == record.split()[3]:
                 return fix_hH(mapping[record.split()[5]] + record.split()[3][0])
+            elif input_spacegroup == record.split('\'')[1].replace(' ', ''):
+                return fix_hH(mapping[record.split()[5]] + record.split()[3][0])
 
     elif type(input_spacegroup) == type(0):
         for record in open(
