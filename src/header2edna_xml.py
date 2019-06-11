@@ -1,18 +1,18 @@
 # header2edna_xml - a jiffy to read a Diffraction Image from an instrument
 # here at Diamond Light Source and generate EDNA xml.
 
-import os, sys
+import os
+import sys
 
-if not 'FAST_DP_ROOT' in os.environ:
+if 'FAST_DP_ROOT' not in os.environ:
     raise RuntimeError('FAST_DP_ROOT not defined')
 
 fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
 
-if not fast_dp_lib in sys.path:
+if fast_dp_lib not in sys.path:
     sys.path.append(fast_dp_lib)
 
 from image_readers import read_image_metadata
-
 from image_names import image2image
 
 # need to be sure that I have the following:
@@ -32,21 +32,37 @@ from image_names import image2image
 # FIXME add a hash table here for the detector long names and short names...
 
 detector_short_names = {
-    ('PILATUS_2M', 1679):'p2m',
-    ('PILATUS_6M', 2527):'p6m',
-    ('ADSC', 3072):'q315-2x',
-    ('RIGAKU', 3000):'raxis4'
+    ('PILATUS_2M', 1679): 'p2m',
+    ('PILATUS_6M', 2527): 'p6m',
+    ('ADSC', 3072): 'q315-2x',
+    ('RIGAKU', 3000): 'raxis4'
     }
 
 detector_long_names = {
-    ('PILATUS_2M', 1679):'PILATUS 2M',
-    ('PILATUS_6M', 2527):'PILATUS 6M',
-    ('ADSC', 3072):'ADSC Q315 bin 2x2',
-    ('RIGAKU', 3000):'RIGAKU RAXIS IV'
+    ('PILATUS_2M', 1679): 'PILATUS 2M',
+    ('PILATUS_6M', 2527): 'PILATUS 6M',
+    ('ADSC', 3072): 'ADSC Q315 bin 2x2',
+    ('RIGAKU', 3000): 'RIGAKU RAXIS IV'
     }
 
+
 def header2edna_xml(image_file, minosc, mintime):
-    '''Read an image header, generate EDNA xml. DLS #1295.'''
+    '''
+    Read an image header, generate EDNA xml. DLS #1295.
+
+    Parameters
+    ----------
+    image_file : str
+
+    minosc : str
+
+    mintime : str
+
+    Returns
+    -------
+    file object
+        xml is returned with relevant info from experiment
+    '''
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',
@@ -88,9 +104,8 @@ def header2edna_xml(image_file, minosc, mintime):
 
     return xml
 
-if __name__ == '__main__':
 
-    import sys
+if __name__ == '__main__':
 
     if len(sys.argv) == 4:
         minosc = float(sys.argv[2])

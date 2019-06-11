@@ -5,6 +5,7 @@ from cell_spacegroup import constrain_cell, lattice_to_spacegroup
 
 from pointless_reader import read_pointless_xml
 
+
 def read_xds_idxref_lp(idxref_lp_file):
     '''Read the XDS IDXREF.LP file and return a dictionary indexed by the
     spacegroup number (ASSERT: this is the lowest symmetry spacegroup for
@@ -16,7 +17,7 @@ def read_xds_idxref_lp(idxref_lp_file):
 
     regexp = re.compile(r'^ \*\ ')
 
-    results = { }
+    results = {}
 
     for record in open(idxref_lp_file, 'r').readlines():
         if regexp.match(record):
@@ -39,6 +40,7 @@ def read_xds_idxref_lp(idxref_lp_file):
 
     return results
 
+
 def read_xds_correct_lp(correct_lp_file):
     '''Read the XDS CORRECT.LP file and get out the spacegroup and
     unit cell constants it decided on.'''
@@ -52,10 +54,11 @@ def read_xds_correct_lp(correct_lp_file):
                 space_group_number = int(record.split()[-1])
             except:
                 space_group_number = 0
-        if 'UNIT_CELL_CONSTANTS=' in record and not 'used' in record:
+        if 'UNIT_CELL_CONSTANTS=' in record and 'used' not in record:
             unit_cell = tuple(map(float, record.split()[-6:]))
 
     return unit_cell, space_group_number
+
 
 def read_correct_lp_get_resolution(correct_lp_file):
     '''Read the CORRECT.LP file and get an estimate of the resolution limit.
@@ -68,7 +71,6 @@ def read_correct_lp_get_resolution(correct_lp_file):
 
     for j in range(len(correct_lp)):
         record = correct_lp[j]
-
         if 'RESOLUTION RANGE  I/Sigma  Chi^2  R-FACTOR  R-FACTOR' in record:
             rec = j + 3
             break
@@ -78,7 +80,7 @@ def read_correct_lp_get_resolution(correct_lp_file):
 
     j = rec
 
-    while not '--------' in correct_lp[j]:
+    while '--------' not in correct_lp[j]:
         isigma = float(correct_lp[j].split()[2])
         if isigma < 1:
             return float(correct_lp[j].split()[1])

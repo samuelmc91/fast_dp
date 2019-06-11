@@ -11,13 +11,30 @@ from cell_spacegroup import lattice_to_spacegroup, ersatz_pointgroup, \
 
 from logger import write
 
+
 def decide_pointgroup(p1_unit_cell, metadata,
-                      input_spacegroup = None):
-    '''Run POINTLESS to get the list of allowed pointgroups (N.B. will
+                      input_spacegroup=None):
+    '''
+    Run POINTLESS to get the list of allowed pointgroups (N.B. will
     insist on triclinic symmetry for this scaling step) then run
     pointless on the resulting reflection file to get the idea of the
     best pointgroup to use. Then return the correct pointgroup and
-    cell.'''
+    cell.
+    
+    Parameters
+    ----------
+    p1_unit_cell : tuple
+
+    metadata : dict
+
+    input_spacegroup : tuple, optional
+
+    Returns
+    -------
+    returns several values of different types
+        unit_cell <tuple>, space_group_number <int>
+        resolution_high <float>
+    '''
 
     assert(p1_unit_cell)
 
@@ -52,8 +69,8 @@ def decide_pointgroup(p1_unit_cell, metadata,
 
     pointless_log = run_job(
         'pointless_wrapper',
-        arguments = ['xdsin', xdsin, 'xmlout', xmlout],
-        stdin = ['systematicabsences off'])
+        arguments=['xdsin', xdsin, 'xmlout', xmlout],
+        stdin=['systematicabsences off'])
 
     fout = open('pointless.log', 'w')
 
@@ -66,19 +83,10 @@ def decide_pointgroup(p1_unit_cell, metadata,
 
     pointless_results = read_pointless_xml(xmlout)
 
-    # space_group_number needs to be initialized
-    # otherwise, an UnboundLocalError occurs ---
-    space_group_number = -1
-    
-    # unit_cell has to be initialized otherwise an
-    # UnboundLocalError occurs ---
-    unit_cell = -1
-
     # select the top solution which is allowed, return this
 
     if input_spacegroup:
-        sg_accepted = False;
-        input_spacegroup="".join(input_spacegroup.split())
+        sg_accepted = False
         pointgroup = ersatz_pointgroup(input_spacegroup)
         if pointgroup.startswith('H'):
             pointgroup = pointgroup.replace('H', 'R')
@@ -86,7 +94,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
         for r in pointless_results:
             result_sg = "".join(check_spacegroup_name(r[1]).split(' '))
             if lattice_to_spacegroup(lattice) in results and \
-                   ersatz_pointgroup(result_sg) == pointgroup :
+                    ersatz_pointgroup(result_sg) == pointgroup:
                 space_group_number = r[1]
                 unit_cell = results[lattice_to_spacegroup(r[0])][1]
                 write('Happy with sg# {}'.format(space_group_number))
@@ -111,7 +119,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
                       unit_cell))
                 break
             else:
-                write('Rejected solution {} {:3d}'.format(r))
+                write('Rejected solution {0[0]} {0[1]:3d}'.format(r))
 
     # this should probably be a proper check...
     assert(space_group_number)

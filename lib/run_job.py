@@ -1,7 +1,8 @@
 import subprocess
 import os
 
-def run_job(executable, arguments = [], stdin = [], working_directory = None):
+
+def run_job(executable, arguments=[], stdin=[], working_directory=None):
     '''Run a program with some command-line arguments and some input,
     then return the standard output when it is finished.'''
 
@@ -32,22 +33,20 @@ def run_job(executable, arguments = [], stdin = [], working_directory = None):
         record = popen.stdout.readline()
         if not record:
             break
-
-        #print record
+        # print record
         output.append(record)
 
     return output
+
 
 def get_number_cpus():
     '''Portably get the number of processor cores available.'''
 
     # Windows NT derived platforms
-
     if os.name == 'nt':
         return int(os.environ['NUMBER_OF_PROCESSORS'])
 
     # linux
-
     if os.path.exists('/proc/cpuinfo'):
         n_cpu = 0
 
@@ -60,9 +59,8 @@ def get_number_cpus():
         return n_cpu
 
     # os X
-
     output = subprocess.Popen(['system_profiler', 'SPHardwareDataType'],
-                              stdout = subprocess.PIPE).communicate()[0]
+                              stdout=subprocess.PIPE).communicate()[0]
 
     ht = 1
 
@@ -76,7 +74,7 @@ def get_number_cpus():
 
     return -1
 
+
 if __name__ == '__main__':
-    import os
     os.environ['FAST_DP_FORKINTEGRATE'] = '1'
     print(''.join(run_job('env')))

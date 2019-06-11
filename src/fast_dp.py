@@ -17,12 +17,12 @@ import re
 import traceback
 import shutil
 
-if not 'FAST_DP_ROOT' in os.environ:
+if 'FAST_DP_ROOT' not in os.environ:
     raise RuntimeError('FAST_DP_ROOT not defined')
 
 fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
 
-if not fast_dp_lib in sys.path:
+if fast_dp_lib not in sys.path:
     sys.path.append(fast_dp_lib)
 
 from run_job import get_number_cpus
@@ -38,8 +38,8 @@ from scale import scale
 from merge import merge
 from pointgroup import decide_pointgroup
 from logger import write, set_afilename, set_afilepath, get_afilepath, set_afileprefix, get_afileprefix
-
 from optparse import SUPPRESS_HELP, OptionParser
+
 
 class FastDP:
     '''A class to implement fast data processing for MX beamlines (at Diamond)
@@ -118,10 +118,10 @@ class FastDP:
         et = self._metadata.get('extra_text', '')
         if et == None:
             self._metadata['extra_text'] = \
-            'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
+                'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
         else:
             self._metadata['extra_text'] = \
-            et + 'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
+                et + 'CLUSTER_NODES={}\n'.format(' '.join(execution_hosts))
 
     def get_execution_hosts(self):
         return self._execution_hosts
@@ -177,7 +177,7 @@ class FastDP:
         missing = []
 
         for j in range(min(matching), max(matching)):
-            if not j in matching:
+            if j not in matching:
                 missing.append(j)
 
         return missing
@@ -260,7 +260,7 @@ class FastDP:
                 start = self._metadata['start']
                 self._metadata['start'] = self._first_image
                 self._metadata['phi_start'] += self._metadata['phi_width'] * \
-                                               (self._first_image - start)
+                    (self._first_image - start)
 
         if self._last_image is not None:
             if self._metadata['end'] > self._last_image:
@@ -289,18 +289,17 @@ class FastDP:
         step_time = time.time()
 
         write('Processing images: {} -> {}'.format(self._metadata['start'],
-                                               self._metadata['end']))
+                                                   self._metadata['end']))
 
         phi_end = self._metadata['phi_start'] + self._metadata['phi_width'] * \
-                  (self._metadata['end'] - self._metadata['start'] + 1)
+            (self._metadata['end'] - self._metadata['start'] + 1)
 
         write('Phi range: {:.2f} -> {:.2f}'.format(self._metadata['phi_start'],
-                                           phi_end))
+                                                   phi_end))
 
         write('Template: {}'.format(self._metadata['template']))
         write('Wavelength: {:.5f}'.format(self._metadata['wavelength']))
         write('Working in: {}'.format(os.getcwd()))
-
 
         if self._plugin_library != " " and self._plugin_library != "None" and self._plugin_library != "none":
             oet = self._metadata['extra_text']
@@ -308,7 +307,7 @@ class FastDP:
             for line in oet.split('\n'):
                 if line[0:3] != "LIB=":
                     if et==None:
-                        et=line+"\n"
+                        et = line+"\n"
                     else:
                         et = et+line+"\n"
             if et==None:
@@ -321,24 +320,24 @@ class FastDP:
             for line in oet.split('\n'):
                 if line[0:3] != "LIB=":
                     if et==None:
-                        et=line+"\n"
+                        et = line+"\n"
                     else:
                         et = et+line+"\n"
             self._metadata['extra_text'] = et
- 
+
         write('Extra commands: {}'.format(self._metadata['extra_text']))
 
         try:
             self._p1_unit_cell = autoindex(self._metadata,
-                                           input_cell = self._input_cell_p1)
+                                           input_cell=self._input_cell_p1)
         except Exception as e:
-            traceback.print_exc(file = open('fast_dp.error', 'w'))
+            traceback.print_exc(file=open('fast_dp.error', 'w'))
             write('Autoindexing error: {}'.format(e))
             fdpelogpath = get_afilepath()
             fdpelogprefix = get_afileprefix()
             if fdpelogpath:
                 try:
-                    shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
+                    shutil.copyfile('fast_dp.error', os.path.join(fdpelogpath, fdpelogprefix+'fast_dp.error'))
                     write('Archived fast_dp.error to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))) 
                 except:
                     write('fast_dp.error not archived to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
@@ -350,13 +349,13 @@ class FastDP:
                                 self._n_cores)
             write('Mosaic spread: {0[0]:.2f} < {0[1]:.2f} < {0[2]:.2f}'.format(tuple(mosaics)))
         except RuntimeError as e:
-            traceback.print_exc(file = open('fast_dp.error', 'w'))
+            traceback.print_exc(file=open('fast_dp.error', 'w'))
             write('Integration error: {}'.format(e))
             fdpelogpath = get_afilepath()
             fdpelogprefix = get_afileprefix()
             if fdpelogpath:
                 try:
-                    shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
+                    shutil.copyfile('fast_dp.error', os.path.join(fdpelogpath, fdpelogprefix+'fast_dp.error'))
                     write('Archived fast_dp.error to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
                 except:
                     write('fast_dp.error not archived to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
@@ -373,7 +372,7 @@ class FastDP:
 
             cell, sg_num, resol = decide_pointgroup(
                 self._p1_unit_cell, metadata,
-                input_spacegroup = self._input_spacegroup)
+                input_spacegroup=self._input_spacegroup)
             self._unit_cell = cell
             self._space_group_number = sg_num
 
@@ -386,9 +385,9 @@ class FastDP:
 
         try:
             self._unit_cell, self._space_group, self._nref, beam_pixels = \
-            scale(self._unit_cell, self._metadata, self._space_group_number, \
-                   self._resolution_high, self._resolution_low, self._n_jobs,
-                                self._n_cores)
+                scale(self._unit_cell, self._metadata, self._space_group_number, \
+                      self._resolution_high, self._resolution_low, self._n_jobs,
+                      self._n_cores)
             self._refined_beam = (self._metadata['pixel'][1] * beam_pixels[1],
                                   self._metadata['pixel'][0] * beam_pixels[0])
 
@@ -402,11 +401,11 @@ class FastDP:
             mtzlogpath = get_afilepath()
             mtzlogprefix = get_afileprefix()
             if mtzlogpath:
-               try:
-                   shutil.copyfile('fast_dp.mtz',os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz'))
-                   write('Archived fast_dp.mtz to {}'.format(os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')))
-               except:
-                   write('fast_dp.mtz not archived to {}'.format(os.path.join(mtzlogpath,mtzlogprefix+'fast_dp.mtz')))
+                try:
+                    shutil.copyfile('fast_dp.mtz', os.path.join(mtzlogpath, mtzlogprefix+'fast_dp.mtz'))
+                    write('Archived fast_dp.mtz to {}'.format(os.path.join(mtzlogpath, mtzlogprefix+'fast_dp.mtz')))
+                except:
+                    write('fast_dp.mtz not archived to {}'.format(os.path.join(mtzlogpath, mtzlogprefix+'fast_dp.mtz')))
         except RuntimeError as e:
             write('Merging error: {}'.format(e))
             return
@@ -416,15 +415,16 @@ class FastDP:
 
         duration = time.time() - step_time
         write('Processing took {} ({:d} s) [{:d} reflections]'.format(
-			time.strftime('%Hh %Mm %Ss',time.gmtime(duration)), int(duration), self._nref))
+            time.strftime('%Hh %Mm %Ss', time.gmtime(duration)), int(duration), self._nref))
 
         write('RPS: {:.1f}'.format((float(self._nref) / duration)))
 
         # write out json and xml
         for func in (output.write_json, output.write_ispyb_xml):
             func(self._commandline, self._space_group,
-               self._unit_cell, self._xml_results,
-               self._start_image, self._refined_beam)
+                 self._unit_cell, self._xml_results,
+                 self._start_image, self._refined_beam)
+
 
 def main():
     '''Main routine for fast_dp.'''
@@ -501,23 +501,23 @@ def main():
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
-      sys.exit("You must point to one image of the dataset to process")
+        sys.exit("You must point to one image of the dataset to process")
 
     image = args[0]
 
     xia2_format = re.match(r"^(.*):(\d+):(\d+)$", image)
     if xia2_format:
-      # Image can be given in xia2-style format, ie.
-      #   set_of_images_00001.cbf:1:5000
-      # to select images 1 to 5000. Resolve any conflicts
-      # with -1/-N in favour of the explicit arguments.
-      image = xia2_format.group(1)
-      if not options.first_image:
-        options.first_image = xia2_format.group(2)
-      if not options.last_image:
-        options.last_image = xia2_format.group(3)
+        # Image can be given in xia2-style format, ie.
+        #   set_of_images_00001.cbf:1:5000
+        # to select images 1 to 5000. Resolve any conflicts
+        #  with -1/-N in favour of the explicit arguments.
+        image = xia2_format.group(1)
+        if not options.first_image:
+            options.first_image = xia2_format.group(2)
+        if not options.last_image:
+            options.last_image = xia2_format.group(3)
 
-    #set up logging, at designated component if found, or in CWD otherwise
+    # set up logging, at designated component if found, or in CWD otherwise
     # The default is to just write fast_dp.log in CWD
     # Component -1 is CWD itself.  The next level up is -2, etc.
     # if name_start is -1, the log name is fast_dp.log.  If log_offset is
@@ -528,21 +528,21 @@ def main():
     log_archive_path = os.getcwd()
     log_archive_prefix = ''
     if not options.component_offsets:
-        options.component_offsets = os.getenv('FAST_DP_LOG_COMPONENT_OFFSETS','0,0,0')
-    log_offset,prefix_start,prefix_end = options.component_offsets.split(',')
+        options.component_offsets = os.getenv('FAST_DP_LOG_COMPONENT_OFFSETS', '0,0,0')
+    log_offset, prefix_start, prefix_end = options.component_offsets.split(',')
     log_offset = int(log_offset)
     prefix_start = int(prefix_start)
     prefix_end = int(prefix_end)
     cur_offset = -1
     head = log_archive_path
-    components={}
-    paths={}
+    components = {}
+    paths = {}
     while head:
         paths[cur_offset] = head
-        (head,tail) = os.path.split(head)
+        (head, tail) = os.path.split(head)
         components[cur_offset] = tail
-        cur_offset = cur_offset -1
-        if head=='/':
+        cur_offset = cur_offset - 1
+        if head == '/':
             break
     if log_offset <= -1 and log_offset > cur_offset:
         try:
@@ -559,7 +559,7 @@ def main():
     if (log_offset < -1):
         set_afilepath(log_archive_path)
         set_afileprefix(log_archive_prefix)
-        set_afilename(os.path.join(log_archive_path,log_archive_prefix+"fast_dp.log"))
+        set_afilename(os.path.join(log_archive_path, log_archive_prefix+"fast_dp.log"))
 
     try:
         fast_dp = FastDP()
@@ -652,19 +652,18 @@ def main():
         fast_dp.process()
 
     except Exception as e:
-        traceback.print_exc(file = open('fast_dp.error', 'w'))
+        traceback.print_exc(file=open('fast_dp.error', 'w'))
         write('Fast DP error: {}'.format(str(e)))
         fdpelogpath = get_afilepath()
         fdpelogprefix = get_afileprefix()
         if fdpelogpath:
-           try:
-               shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
-               write('Archived fast_dp.error to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
-           except:
-               write('fast_dp.error not archived to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
+            try:
+                shutil.copyfile('fast_dp.error',os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error'))
+                write('Archived fast_dp.error to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
+            except:
+                write('fast_dp.error not archived to {}'.format(os.path.join(fdpelogpath,fdpelogprefix+'fast_dp.error')))
 
-
-    json_stuff = { }
+    json_stuff = {}
     for prop in dir(fast_dp):
         ignore = ['_read_image_metadata']
         if not prop.startswith('_') or prop.startswith('__'):
@@ -673,7 +672,8 @@ def main():
             continue
         json_stuff[prop] = getattr(fast_dp, prop)
     with open('fast_dp.state', 'wb') as fh:
-      json.dump(json_stuff, fh)
+        json.dump(json_stuff, fh)
+
 
 if __name__ == '__main__':
     main()

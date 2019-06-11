@@ -11,12 +11,12 @@ import time
 import copy
 import traceback
 
-if not 'FAST_DP_ROOT' in os.environ:
+if 'FAST_DP_ROOT' not in os.environ:
     raise RuntimeError('FAST_DP_ROOT not defined')
 
 fast_dp_lib = os.path.join(os.environ['FAST_DP_ROOT'], 'lib')
 
-if not fast_dp_lib in sys.path:
+if fast_dp_lib not in sys.path:
     sys.path.append(fast_dp_lib)
 
 from run_job import get_number_cpus
@@ -34,6 +34,7 @@ from pointgroup import decide_pointgroup
 from logger import write, set_filename
 set_filename('fast_rdp.log')
 
+
 class FastRDP:
     '''A class to implement fast data processing for MX beamlines (at Diamond)
     which uses XDS, Pointless, Scala and a couple of other CCP4 odds and
@@ -42,7 +43,7 @@ class FastRDP:
     def __init__(self):
 
         with open('fast_dp.state', 'rb') as fh:
-          json_stuff = json.load(fh)
+            json_stuff = json.load(fh)
         for prop in json_stuff:
             # do not want to pass this along since that will limit what we
             # can reindex to...
@@ -111,14 +112,14 @@ class FastRDP:
             pass
 
         # check input frame limits
-        if not self._first_image is None:
+        if self._first_image is not None:
             if self._metadata['start'] < self._first_image:
                 start = self._metadata['start']
                 self._metadata['start'] = self._first_image
                 self._metadata['phi_start'] += self._metadata['phi_width'] * \
-                                               (self._first_image - start)
+                    (self._first_image - start)
 
-        if not self._last_image is None:
+        if self._last_image is not None:
             if self._metadata['end'] > self._last_image:
                 self._metadata['end'] = self._last_image
 
@@ -127,13 +128,12 @@ class FastRDP:
         write('Processing images: {} -> {}'.format(
                    self._metadata['start'], self._metadata['end']))
 
-                                               
         phi_end = self._metadata['phi_start'] + self._metadata['phi_width'] * \
-                  (self._metadata['end'] - self._metadata['start'] + 1)
+            (self._metadata['end'] - self._metadata['start'] + 1)
 
         write('Phi range: {:.2f} -> {:.2f}'.format(
                    self._metadata['phi_start'], phi_end))
-                                           
+
         write('Template: {}'.format(self._metadata['template']))
         write('Wavelength: {:.5f}'.format(self._metadata['wavelength']))
         write('Working in: {}'.format(os.getcwd()))
@@ -160,7 +160,6 @@ class FastRDP:
                   cell[3], cell[4], cell[5]))
 
         try:
-
             # FIXME in here will need a mechanism to take the input
             # spacegroup, determine the corresponding pointgroup
             # and then apply this (or verify that it is allowed then
@@ -170,7 +169,7 @@ class FastRDP:
 
             cell, sg_num, resol = decide_pointgroup(
                 self._p1_unit_cell, metadata,
-                input_spacegroup = self._input_spacegroup)
+                input_spacegroup=self._input_spacegroup)
             self._unit_cell = cell
             self._space_group_number = sg_num
 
@@ -183,9 +182,9 @@ class FastRDP:
 
         try:
             self._unit_cell, self._space_group, self._nref, beam_pixels = \
-            scale(self._unit_cell, self._metadata, self._space_group_number, \
-                   self._resolution_high, self._resolution_low, self._n_jobs,
-                                self._n_cores)
+                scale(self._unit_cell, self._metadata, self._space_group_number, \
+                      self._resolution_high, self._resolution_low, self._n_jobs,
+                      self._n_cores)
             self._refined_beam = (self._metadata['pixel'][1] * beam_pixels[1],
                                   self._metadata['pixel'][0] * beam_pixels[0])
 
@@ -212,12 +211,13 @@ class FastRDP:
                self._nref)))
 
         # write out json and xml
-        for func, filename in [ (output.write_json, 'fast_rdp.json'),
-                                (output.write_ispyb_xml, 'fast_rdp.xml') ]:
-          func(self._commandline, self._space_group,
-               self._unit_cell, self._xml_results,
-               self._start_image, self._refined_beam,
-               filename=filename)
+        for func, filename in [(output.write_json, 'fast_rdp.json'),
+                               (output.write_ispyb_xml, 'fast_rdp.xml')]:
+            func(self._commandline, self._space_group,
+                 self._unit_cell, self._xml_results,
+                 self._start_image, self._refined_beam,
+                 filename=filename)
+
 
 def main():
     '''Main routine for fast_rdp.'''
@@ -315,8 +315,9 @@ def main():
         fast_rdp.reprocess()
 
     except Exception as e:
-        traceback.print_exc(file = open('fast_rdp.error', 'w'))
+        traceback.print_exc(file=open('fast_rdp.error', 'w'))
         write('Fast RDP error: {}'.format(str(e)))
+
 
 if __name__ == '__main__':
     main()

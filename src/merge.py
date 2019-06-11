@@ -1,10 +1,22 @@
 from run_job import run_job
 
 from logger import write
+import sys
+
 
 def anomalous_signals(hklin):
     '''
     Compute some measures of anomalous signal: df / f and di / sig(di).
+
+    Parameters
+    ----------
+    hklin : str
+        name of file
+
+    Returns
+    -------
+    float
+        two float values: df_d, di_sigdi
     '''
 
     from iotbx import mtz
@@ -31,10 +43,25 @@ def anomalous_signals(hklin):
 
     return df_f, di_sigdi
 
+
 def merge(hklout='fast_dp.mtz', aimless_log='aimless.log'):
-    '''Merge the reflections from XDS_ASCII.HKL with Aimless to get
+    '''
+    Merge the reflections from XDS_ASCII.HKL with Aimless to get
     statistics - this will use pointless for the reflection file format
-    mashing.'''
+    mashing.
+
+    Parameters
+    ----------
+    hklout : str
+        file name that will be used to write to
+
+    aimless_log : str
+        file name that will be used to write to
+
+    Returns
+    -------
+    dict
+    '''
 
     run_job('pointless_wrapper',
             ['-c', 'xdsin', 'XDS_ASCII.HKL', 'hklout', 'xds_sorted.mtz'])
@@ -59,11 +86,10 @@ def merge(hklout='fast_dp.mtz', aimless_log='aimless.log'):
         if '!!!! No data !!!!' in record:
             raise RuntimeError('aimless complains no data')
 
-
     return parse_aimless_log(log)
 
-def parse_aimless_log(log):
 
+def parse_aimless_log(log):
     for record in log:
         if 'Low resolution limit  ' in record:
             lres = tuple(map(float, record.split()[-3:]))
@@ -165,7 +191,7 @@ def parse_aimless_log(log):
 
     return xml_results
 
+
 if __name__ == '__main__':
 
-    import sys
     parse_aimless_log(open(sys.argv[1]).readlines())
