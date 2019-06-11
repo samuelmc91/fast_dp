@@ -47,7 +47,22 @@ detector_long_names = {
 
 
 def header2edna_xml(image_file, minosc, mintime):
-    '''Read an image header, generate EDNA xml. DLS #1295.'''
+    '''
+    Read an image header, generate EDNA xml. DLS #1295.
+
+    Parameters
+    ----------
+    image_file : str
+
+    minosc : str
+
+    mintime : str
+
+    Returns
+    -------
+    file object
+        xml is returned with relevant info from experiment
+    '''
 
     template = os.path.join(os.environ['FAST_DP_ROOT'],
                             'lib', 'templates',

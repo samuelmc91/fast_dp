@@ -10,10 +10,23 @@ from cell_spacegroup import spacegroup_to_lattice
 from logger import write
 
 
-def autoindex(metadata, input_cell = None):
-    '''Perform the autoindexing, using metatdata, get a list of possible
+def autoindex(metadata, input_cell=None):
+    '''Perform the autoindexing, using metadata, get a list of possible
     lattices and record / return the triclinic cell constants (get these from
-    XPARM.XDS).'''
+    XPARM.XDS).
+
+    Parameters
+    ----------
+    metadata : dict
+        relevant information about the experimental data
+
+    input_cell : tuple, optional
+
+    Returns
+    -------
+    tuple
+        the unit cell that is used in the integrate process
+    '''
 
     assert(metadata)
 

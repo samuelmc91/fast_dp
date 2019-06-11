@@ -4,8 +4,32 @@ import shutil
 from xds_writer import write_xds_inp_integrate
 from run_job import run_job
 
+
 def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
-    '''Peform the integration with a triclinic basis.'''
+    '''
+    Peform the integration with a triclinic basis.
+
+    Parameters
+    ----------
+    metadata : dict
+        relevant information about the experiment
+
+    p1_unit_cell : tuple
+
+    resolution_low : float
+
+    n_jobs : int
+        the number of jobs that are taking care of processing data
+
+    n_processors : int
+        how many processors is the machine currently using
+
+    Returns
+    -------
+    float
+        3 different float values for the mosaic spread
+        min <float>, mosaic <float>, and max <float>
+    '''
 
     assert(metadata)
     assert(p1_unit_cell)
@@ -21,8 +45,6 @@ def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
     shutil.copyfile(xds_inp, 'XDS.INP')
 
     run_job('xds_par')
-
-    import os
 
     # FIXME need to check that all was hunky-dory in here!
 
