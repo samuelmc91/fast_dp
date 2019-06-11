@@ -14,11 +14,27 @@ from logger import write
 
 def decide_pointgroup(p1_unit_cell, metadata,
                       input_spacegroup=None):
-    '''Run POINTLESS to get the list of allowed pointgroups (N.B. will
+    '''
+    Run POINTLESS to get the list of allowed pointgroups (N.B. will
     insist on triclinic symmetry for this scaling step) then run
     pointless on the resulting reflection file to get the idea of the
     best pointgroup to use. Then return the correct pointgroup and
-    cell.'''
+    cell.
+    
+    Parameters
+    ----------
+    p1_unit_cell : tuple
+
+    metadata : dict
+
+    input_spacegroup : tuple, optional
+
+    Returns
+    -------
+    returns several values of different types
+        unit_cell <tuple>, space_group_number <int>
+        resolution_high <float>
+    '''
 
     assert(p1_unit_cell)
 

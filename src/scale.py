@@ -9,8 +9,32 @@ from cell_spacegroup import spacegroup_number_to_name
 
 def scale(unit_cell, metadata, space_group_number, resolution_high,
           resolution_low=30.0, no_jobs=1, no_processors=0):
-    '''Perform the scaling with the spacegroup and unit cell calculated
-    from pointless and correct. N.B. this scaling is done by CORRECT.'''
+    '''
+    Perform the scaling with the spacegroup and unit cell calculated
+    from pointless and correct. N.B. this scaling is done by CORRECT.
+
+    Parameters
+    ----------
+    unit_cell : tuple
+
+    metadata : dict
+
+    space_group_number : int
+
+    resolution_high : float
+
+    resolution_low : float
+
+    no_jobs : int
+
+    no_processors : int
+
+    Returns
+    -------
+    several values of different types are returned
+        unit_cell <tuple>, space_group <str>
+        nref <int>, refined_beam <tuple>
+    '''
 
     assert(unit_cell)
     assert(metadata)

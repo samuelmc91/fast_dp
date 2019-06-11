@@ -7,6 +7,16 @@ import sys
 def anomalous_signals(hklin):
     '''
     Compute some measures of anomalous signal: df / f and di / sig(di).
+
+    Parameters
+    ----------
+    hklin : str
+        name of file
+
+    Returns
+    -------
+    float
+        two float values: df_d, di_sigdi
     '''
 
     from iotbx import mtz
@@ -35,9 +45,23 @@ def anomalous_signals(hklin):
 
 
 def merge(hklout='fast_dp.mtz', aimless_log='aimless.log'):
-    '''Merge the reflections from XDS_ASCII.HKL with Aimless to get
+    '''
+    Merge the reflections from XDS_ASCII.HKL with Aimless to get
     statistics - this will use pointless for the reflection file format
-    mashing.'''
+    mashing.
+
+    Parameters
+    ----------
+    hklout : str
+        file name that will be used to write to
+
+    aimless_log : str
+        file name that will be used to write to
+
+    Returns
+    -------
+    dict
+    '''
 
     run_job('pointless_wrapper',
             ['-c', 'xdsin', 'XDS_ASCII.HKL', 'hklout', 'xds_sorted.mtz'])
