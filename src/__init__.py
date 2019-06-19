@@ -1,2 +1,0 @@
-import xds_writer
-from xds_writer import write_xds_inp_autoindex, write_xds_inp_autoindex_p1_cell
