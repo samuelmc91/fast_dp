@@ -1,0 +1,11 @@
+This folder contains unit tests
+for fast_dp program.
+
+
+The main file is runner.py.
+
+If any additional tests are added you can 
+add it to runner.py.
+
+
+

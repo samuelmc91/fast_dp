@@ -27,7 +27,6 @@ def autoindex(metadata, input_cell=None):
     tuple
         the unit cell that is used in the integrate process
     '''
-
     assert(metadata)
 
     xds_inp = 'AUTOINDEX.INP'
