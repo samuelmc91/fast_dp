@@ -4,13 +4,18 @@
 
 Fast DP is a small Python program which uses XDS, CCP4 & CCTBX to deliver
 data processing results very quickly: quite how quickly will depend on the
-operating environment. In essence, the first image in the sweep is passed
-to the program, it's header read and then XDS used to index with a triclinic
-lattice using spots drawn from small wedges of data around the start, 45
-degrees in and 90 degrees in (or as close as possible to this). Integration
-is then performed in parallel, either using multiple cores or multiple
-processors if the XDS forkintegrate script is appropriately configured. The
-data are then scaled with XDS, still in P1, before analysis with Pointless.
+operating environment. 
+
+In essence, the first image in the sweep is passed to the program, it's 
+header read and then XDS used to index with a triclinic lattice using spots
+drawn from small wedges of data around the start, 45 degrees in and 90 degrees
+in (or as close as possible to this). 
+
+Integration is then performed in parallel, either using multiple cores or multiple
+processors if the XDS forkintegrate script is appropriately configured. 
+
+The data are then scaled with XDS, still in P1, before analysis with Pointless.
+
 Finally the analysis from Pointless and the global postrefinement results
 from the XDS CORRECT step are then used to select a pointgroup, after which
 the data are re-scaled with XDS in this pointgroup and merged with Aimless.
