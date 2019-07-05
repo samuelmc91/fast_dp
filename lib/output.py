@@ -1,5 +1,5 @@
 # Is this import statement necessary?
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import, print_function, division
 
 import json
 import os

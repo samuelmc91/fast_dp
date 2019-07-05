@@ -1,3 +1,4 @@
+from __future__ import absolute_import, print_function, division
 import os
 import shutil
 
@@ -30,7 +31,6 @@ def integrate(metadata, p1_unit_cell, resolution_low, n_jobs, n_processors):
         3 different float values for the mosaic spread
         min <float>, mosaic <float>, and max <float>
     '''
-
     assert(metadata)
     assert(p1_unit_cell)
 

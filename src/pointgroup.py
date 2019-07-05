@@ -1,3 +1,4 @@
+from __future__ import absolute_import, print_function, division
 import os
 import shutil
 
@@ -87,6 +88,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
 
     if input_spacegroup:
         sg_accepted = False
+	input_spacegroup="".join(input_spacegroup.split())
         pointgroup = ersatz_pointgroup(input_spacegroup)
         if pointgroup.startswith('H'):
             pointgroup = pointgroup.replace('H', 'R')

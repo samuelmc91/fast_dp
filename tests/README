@@ -1,0 +1,12 @@
+This folder contains unit tests
+for fast_dp program.
+
+
+The main file is runner.py.
+
+If any additional tests are added you can 
+add it to runner.py.
+
+test_autoindex.py and test_image_readers.py
+is not working at the moment. Currently
+trying to resolve the issue with both tests.
