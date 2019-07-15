@@ -1,4 +1,4 @@
-from __future__ import absolute_import, print_function, division
+from __future__ import absolute_import
 import xml.dom.minidom
 
 from cell_spacegroup import lauegroup_to_lattice
@@ -19,8 +19,8 @@ def read_pointless_xml(pointless_xml_file):
         'Confidence')[0].childNodes[0].data)
     totalprob = float(best.getElementsByTagName(
         'TotalProb')[0].childNodes[0].data)
-    reindex_matrix = map(float, best.getElementsByTagName(
-        'ReindexMatrix')[0].childNodes[0].data.split())
+    reindex_matrix = list(map(float, best.getElementsByTagName(
+        'ReindexMatrix')[0].childNodes[0].data.split()))
     reindex_operator = best.getElementsByTagName(
         'ReindexOperator')[0].childNodes[0].data.strip()
 

@@ -72,7 +72,7 @@ def write_xds_inp_autoindex(metadata, xds_inp):
     # Ok: I think it is too slow already. Three wedges, as per xia2...
     # that would be 5 images per wedge, then. Erk. Should be *degrees*
 
-    images = range(metadata['start'], metadata['end'] + 1)
+    images = list(range(metadata['start'], metadata['end'] + 1))
 
     wedge_size = int(round(5.0 / metadata['oscillation'][1])) - 1
 
@@ -168,7 +168,7 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
     # Ok: I think it is too slow already. Three wedges, as per xia2...
     # that would be 5 images per wedge, then. Erk. Should be *degrees*
 
-    images = range(metadata['start'], metadata['end'] + 1)
+    images = list(range(metadata['start'], metadata['end'] + 1))
 
     wedge_size = int(round(5.0 / metadata['oscillation'][1])) - 1
 
@@ -343,7 +343,7 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number,
     # Ok: I think it is too slow already. Three wedges, as per xia2...
     # that would be 5 images per wedge, then. Erk. Should be *degrees*
 
-    images = range(metadata['start'], metadata['end'] + 1)
+    images = list(range(metadata['start'], metadata['end'] + 1))
 
     wedge_size = int(round(5.0 / metadata['oscillation'][1])) - 1
 

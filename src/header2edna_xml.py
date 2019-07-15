@@ -1,7 +1,8 @@
 # header2edna_xml - a jiffy to read a Diffraction Image from an instrument
 # here at Diamond Light Source and generate EDNA xml.
 
-from __future__ import absolute_import, print_function, division
+from __future__ import print_function, absolute_import
+
 import os
 import sys
 

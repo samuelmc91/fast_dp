@@ -1,4 +1,5 @@
-from __future__ import absolute_import, print_function, division
+from __future__ import print_function, absolute_import
+
 import os
 from cctbx import xray
 from cctbx.sgtbx import space_group
