@@ -1,3 +1,4 @@
+from __future__ import absolute_import, print_function, division
 import sys
 import time
 import os
@@ -142,7 +143,7 @@ def failover_hdf5(hdf5_file):
     header['template'] = template.replace('master', '??????')
     header['start'] = images[0]
     header['end'] = images[1]
-    header['matching'] = range(images[0], images[1]+1)
+    header['matching'] = list(range(images[0], images[1]+1))
     return header
 
 
@@ -258,8 +259,8 @@ def failover_cbf(cbf_file):
             header['sensor'] = 1000 * float(record.split()[4])
 
         if 'Beam_xy' in record:
-            beam_pixels = map(float, record.replace('(', '').replace(
-                ')', '').replace(',', '').split()[2:4])
+            beam_pixels = list(map(float, record.replace('(', '').replace(
+                ')', '').replace(',', '').split()[2:4]))
 
             # for CBF images need to swap these to put in XDS mosflm
             # coordinate frame...

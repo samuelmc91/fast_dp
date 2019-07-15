@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import sys
 import re
 
@@ -23,7 +24,7 @@ def read_xds_idxref_lp(idxref_lp_file):
         if regexp.match(record):
             tokens = record.split()
             spacegroup = lattice_to_spacegroup(tokens[2])
-            cell = tuple(map(float, tokens[4:10]))
+            cell = tuple(list(map(float, tokens[4:10])))
             constrained_cell = constrain_cell(tokens[2][0], cell)
             penalty = float(tokens[3])
 
@@ -34,7 +35,7 @@ def read_xds_idxref_lp(idxref_lp_file):
                 results[spacegroup] = penalty, constrained_cell
 
         if 'DETECTOR COORDINATES (PIXELS) OF DIRECT BEAM' in record:
-            results['beam centre pixels'] = map(float, record.split()[-2:])
+            results['beam centre pixels'] = list(map(float, record.split()[-2:]))
 
     assert('beam centre pixels' in results)
 
@@ -55,7 +56,7 @@ def read_xds_correct_lp(correct_lp_file):
             except:
                 space_group_number = 0
         if 'UNIT_CELL_CONSTANTS=' in record and 'used' not in record:
-            unit_cell = tuple(map(float, record.split()[-6:]))
+            unit_cell = tuple(list(map(float, record.split()[-6:])))
 
     return unit_cell, space_group_number
 

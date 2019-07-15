@@ -6,7 +6,7 @@
 # intensities which have been scaled reasonably well. This relies heavily on
 # XDS, and forkintegrate in particular.
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import sys
 import os
