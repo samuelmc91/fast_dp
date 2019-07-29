@@ -57,7 +57,7 @@ class _writer:
                     self._afout = open(self._afilename, 'w')
                 self._afout.write('{}\n'.format(record))
             except:
-                print(self._afilename + ' not available for writing')
+                print('{} not available for writing'.format(self._afilename))
                 self._afilename = None
         return
 

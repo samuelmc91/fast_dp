@@ -108,7 +108,7 @@ class FastRDP:
 
         try:
             hostname = os.environ['HOSTNAME'].split('.')[0]
-            write('Running on: {}').format(hostname)
+            write('Running on: {}'.format(hostname))
         except Exception:
             pass
 
