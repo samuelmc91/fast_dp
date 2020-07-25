@@ -324,8 +324,9 @@ class FastDP:
                     else:
                         et = et+line+"\n"
             self._metadata['extra_text'] = et
-
-        write('Extra commands: {}'.format(self._metadata['extra_text']))
+        
+        if "extra_text" in self._metadata.keys():
+            write('Extra commands: {}'.format(self._metadata['extra_text']))
 
         try:
             self._p1_unit_cell = autoindex(self._metadata,
