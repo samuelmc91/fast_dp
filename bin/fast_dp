@@ -1,4 +1,4 @@
-#!/bin/bash -xv
+#!/bin/bash
 # 
 # run the fast data processing, assumes that the environment is configured
 # with XDS, CCP4 on the PATH and the forkintegrate script properly configured

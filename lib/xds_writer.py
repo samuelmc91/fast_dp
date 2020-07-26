@@ -32,9 +32,15 @@ def write_xds_inp_autoindex(metadata, xds_inp):
 
     friedels_law = 'FALSE'
 
+    xno_processors = get_number_cpus()
+    if xno_processors > 99:
+        xno_processors = 99
+
+    
+
     fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
-        no_processors = get_number_cpus(),
+        no_processors = xno_processors,
         nx = metadata['size'][0],
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
@@ -126,9 +132,13 @@ def write_xds_inp_autoindex_p1_cell(metadata, xds_inp, cell):
 
     friedels_law = 'FALSE'
 
+    xno_processors = get_number_cpus
+    if xno_processors > 99:
+        xno_processors = 99
+
     fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
-        no_processors = get_number_cpus(),
+        no_processors = xno_processors,
         nx = metadata['size'][0],
         ny = metadata['size'][1],
         qx = metadata['pixel'][0],
@@ -230,6 +240,9 @@ def write_xds_inp_integrate(metadata, xds_inp, resolution_low, no_jobs=1, no_pro
     if no_processors == 0:
         no_processors = get_number_cpus()
 
+    if no_processors > 99:
+        no_processors = 99
+
     fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
         no_processors = no_processors,
@@ -294,6 +307,9 @@ def write_xds_inp_redo(metadata,  unit_cell, space_group_number,
 
     if no_processors == 0:
         no_processors = get_number_cpus()
+
+    if no_processors > 99:
+        no_processors = 99
 
     fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
@@ -412,9 +428,13 @@ def write_xds_inp_correct(metadata, unit_cell, space_group_number,
     else:
         corrections = '!'
 
+    xno_processors = get_number_cpus()
+    if xno_processors > 99:
+        xno_processors = 99
+
     fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
-        no_processors = get_number_cpus(),
+        no_processors = xno_processors,
         resolution_low = resolution_low,
         resolution_high = resolution_high,
         unit_cell_a = unit_cell[0],
@@ -487,9 +507,13 @@ def write_xds_inp_correct_no_cell(metadata,
     else:
         corrections = '!'
 
+    xno_processors = get_number_cpus()
+    if xno_processors > 99:
+        xno_processors = 99
+
     fout.write('{}\n'.format(template_str.format(
         extra_text = metadata.get('extra_text', '!PARAMETER=VALUE'),
-        no_processors = get_number_cpus(),
+        no_processors = xno_processors,
         resolution_low = resolution_low,
         resolution_high = resolution_high,
         nx = metadata['size'][0],
