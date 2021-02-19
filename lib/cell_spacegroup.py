@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 from cctbx import crystal, sgtbx, uctbx
 from cctbx.sgtbx.bravais_types import bravais_lattice
+import os
 
 
 def ersatz_pointgroup(spacegroup_name):
@@ -29,6 +30,24 @@ def spacegroup_to_lattice(input_spacegroup):
 
 
 def check_spacegroup_name(spacegroup_name):
+    '''Will convert written spacegroup to the corresponding spacegroup number 
+    and return the number to the check spacegroup number method,'''
+    spacegroup_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
+    with open(os.path.join(spacegroup_location, 'spacegroups.lib'), 'r') as f:
+        space_groups_dict = eval(f.read())
+
+    space_in_split = [c for c in spacegroup_name if c != ' ']
+    result = ''.join(space_in_split).upper()
+    spacegroup_number = 250
+    for line, spacegroup_out in space_groups_dict.items():
+        new_line = [c for c in line if c != ' ']
+        new_line = ''.join(new_line).upper()
+        if result == new_line:
+            spacegroup_number = spacegroup_out
+    return check_spacegroup_number(spacegroup_number)
+
+def check_spacegroup_number(spacegroup_name):
     """Will return normalised name if spacegroup name is recognised,
     raise exception otherwise. For checking command-line options."""
 

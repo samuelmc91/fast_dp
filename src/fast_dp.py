@@ -26,8 +26,8 @@ if fast_dp_lib not in sys.path:
     sys.path.append(fast_dp_lib)
 
 from run_job import get_number_cpus
-from cell_spacegroup import check_spacegroup_name, check_split_cell, \
-     generate_primitive_cell
+from cell_spacegroup import check_spacegroup_name, check_spacegroup_number, \
+    check_split_cell, generate_primitive_cell
 import output
 
 from image_readers import read_image_metadata, check_file_readable
@@ -638,11 +638,15 @@ def main():
 
         if options.spacegroup:
             try:
-                spacegroup = check_spacegroup_name(options.spacegroup)
+                if options.spacegroup.isdigit():
+                    spacegroup = check_spacegroup_number(options.spacegroup)
+                else:
+                    spacegroup = check_spacegroup_name(options.spacegroup)
                 fast_dp.set_input_spacegroup(spacegroup)
                 write('Set spacegroup: {}'.format(spacegroup))
             except RuntimeError:
-                write('Spacegroup {} not recognised: ignoring'.format(options.spacegroup))
+                write('Spacegroup {} not recognised: ignoring'.format(
+                    options.spacegroup))
 
         if options.cell:
             assert(options.spacegroup)
