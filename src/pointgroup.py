@@ -1,15 +1,13 @@
-from __future__ import absolute_import
-
 import os
 import shutil
 
 from xds_reader import read_xds_idxref_lp, read_correct_lp_get_resolution, \
-     read_xds_correct_lp
+    read_xds_correct_lp
 from pointless_reader import read_pointless_xml
 from xds_writer import write_xds_inp_correct_no_cell, write_xds_inp_correct
 from run_job import run_job
-from cell_spacegroup import lattice_to_spacegroup, ersatz_pointgroup, \
-    spacegroup_to_lattice, check_spacegroup_name
+from cell_spacegroup import lattice_to_spacegroup, ersatz_pointgroup, check_spacegroup_number, \
+    spacegroup_to_lattice, check_spacegroup_name, check_pointgroup
 
 from logger import write
 
@@ -22,7 +20,7 @@ def decide_pointgroup(p1_unit_cell, metadata,
     pointless on the resulting reflection file to get the idea of the
     best pointgroup to use. Then return the correct pointgroup and
     cell.
-    
+
     Parameters
     ----------
     p1_unit_cell : tuple
@@ -89,15 +87,17 @@ def decide_pointgroup(p1_unit_cell, metadata,
 
     if input_spacegroup:
         sg_accepted = False
-        input_spacegroup="".join(input_spacegroup.split())
-        pointgroup = ersatz_pointgroup(input_spacegroup)
+        if not isinstance(input_spacegroup, int):
+            input_spacegroup = check_spacegroup_name(input_spacegroup)
+        print(input_spacegroup)
+        pointgroup = check_pointgroup(input_spacegroup)
         if pointgroup.startswith('H'):
             pointgroup = pointgroup.replace('H', 'R')
         lattice = spacegroup_to_lattice(input_spacegroup)
         for r in pointless_results:
-            result_sg = "".join(check_spacegroup_name(r[1]).split(' '))
+            result_sg = "".join(check_spacegroup_number(r[1]).split(' '))
             if lattice_to_spacegroup(lattice) in results and \
-                    ersatz_pointgroup(result_sg) == pointgroup:
+                    check_pointgroup(result_sg) == pointgroup:
                 space_group_number = r[1]
                 unit_cell = results[lattice_to_spacegroup(r[0])][1]
                 write('Happy with sg# {}'.format(space_group_number))
@@ -105,7 +105,6 @@ def decide_pointgroup(p1_unit_cell, metadata,
                       unit_cell))
                 sg_accepted = True
                 break
-
         if not sg_accepted:
             write('No indexing solution for spacegroup {} so ignoring'.format(
                   input_spacegroup))
